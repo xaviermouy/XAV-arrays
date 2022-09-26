@@ -1,0 +1,25 @@
+# ####################################################
+# Configuration file for the fish detector
+
+# Parameter values after the semi-columns can be
+# modified as needed but section names and indentation
+# shoud be kept as is.
+# 
+# Make sure there is a space between the : and the
+# parameter value.
+# ####################################################
+
+ENVIRONMENT:
+    sound_speed_mps: 1484
+
+TDOA:
+    ref_channel: 2
+    upsample_res_sec: 0.0000001
+    normalize: False
+    min_corr_val: 0.8 
+
+GRIDSEARCH:
+    x_limits_m: [-3,3] 
+    y_limits_m: [-3,3]
+    z_limits_m: [-0.2,3]
+    spacing_m: 0.02

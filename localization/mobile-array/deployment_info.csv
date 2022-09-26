@@ -1,0 +1,5 @@
+audio_channel_number,UTC_offset,sampling_frequency,bit_depth,mooring_platform_name,recorder_type,recorder_SN,hydrophone_model,hydrophone_SN,hydrophone_depth,location_name,location_lat,location_lon,location_water_depth,deployment_ID,deployment_date,recovery_date
+0,-7,48000,24,mobile-XAV-array,SoundTrap-300,5147,HTI-96-MIN,1117006,0,Hornby-Island,49.490267,-124.667639,20,HI-201909,20190914T000000,20190919T000000
+1,-7,48000,24,mobile-XAV-array,SoundTrap-300,5147,HTI-96-MIN,1117005,0,Hornby-Island,49.490267,-124.667639,20,HI-201909,20190914T000000,20190919T000000
+2,-7,48000,24,mobile-XAV-array,SoundTrap-300,5147,HTI-96-MIN,1117008,0,Hornby-Island,49.490267,-124.667639,20,HI-201909,20190914T000000,20190919T000000
+3,-7,48000,24,mobile-XAV-array,SoundTrap-300,5147,HTI-96-MIN,1117007,0,Hornby-Island,49.490267,-124.667639,20,HI-201909,20190914T000000,20190919T000000
