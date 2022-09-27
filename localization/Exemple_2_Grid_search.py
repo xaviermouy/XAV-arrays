@@ -17,12 +17,19 @@ import localization
 
 
 #load configuration files - Config files mobile array - Horny Island - Copper Rockfish
-deployment_info_file = r'.\mobile-array\deployment_info.csv'
-hydrophones_config_file = r'.\mobile-array\hydrophones_config_HI-201909.csv'
-detection_config_file = r'.\mobile-array\detection_config_mobile_array.yaml'
-localization_config_file = r'.\mobile-array\localization_config_mobile_array.yaml'
-#t1 = 216
-#t2 = 223
+# deployment_info_file = r'.\mobile-array\deployment_info.csv'
+# hydrophones_config_file = r'.\mobile-array\hydrophones_config_HI-201909.csv'
+# detection_config_file = r'.\mobile-array\detection_config_mobile_array.yaml'
+# localization_config_file = r'.\mobile-array\localization_config_mobile_array.yaml'
+# infile = r'.\mobile-array\data\671404070.190921010008.wav'
+
+#mini copper
+deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\deployment_info.csv'
+hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\hydrophones_config_05-MILL.csv'
+detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\detection_config_mini_array.yaml'
+localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\localization_config_mini_array.yaml'
+infile = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\671404070.190801233653.wav'
+
 
 # show deployment file
 Deployment = DeploymentInfo()
@@ -38,7 +45,6 @@ detection_config = ecosound.core.tools.read_yaml(detection_config_file)
 localization_config = ecosound.core.tools.read_yaml(localization_config_file)
 
 # Look up data files for all channels
-infile = r'.\mobile-array\data\671404070.190921010008.wav'
 audio_files = tools.find_audio_files(infile, hydrophones_config)
 
 # plot all data 
@@ -111,7 +117,9 @@ tools.plot_single_channel(audio_files['path'][detection_config['AUDIO']['channel
 localization.plot_localizations3D(localizations=localizations, hydrophones=hydrophones_config)
 
 
-# Show plot of convergence for a given localization
+# Show plot of 2D and 1D marginal
+#PPDs[0].PPD.sum("z").plot()
 
 # save as csv
-localizations.to_csv('mini_array_localizations.csv')
+localizations.to_csv('localization_results.csv')
+localizations.to_netcdf('localization_results.nc')
