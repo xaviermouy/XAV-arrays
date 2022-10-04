@@ -9,29 +9,31 @@ This repository contains all the necessary information to assemble, operate, dep
      style="float: left; margin-right: 10px;" />
 
 ## Building and deploying the audio-video arrays
-Building instructions and suggested deployment procedures can be found in the Supplementary Information of the paper. Deploymnet log sheets and and check lists can be found in the [logsheets](https://github.com/xaviermouy/XAV-arrays/tree/main/logsheets/) folder.
+Building instructions and suggested deployment procedures can be found in the Supplementary Information of the paper. Deploymnet log sheets and and check lists can be found in the logsheets folder [here](https://github.com/xaviermouy/XAV-arrays/tree/main/logsheets/).
 
 
-## 3D acoustic localization
+## Acoustic localization
 
-Acoustic localization in performed using either linearized inversion or fully non-linear inversion.
-We provide python code for both approaches. 
+Acoustic localization in performed using either linearized inversion or fully non-linear inversion. We provide python code for both approaches. 
 
 ### Linearized inversion
 The localization process using linearized inversion is described in this Jupyter Notebook using data from the large audio-video array.
 The notebook can also be executed on Google Colab.
 
-* Jupyter Notebook: here
-* GoogleColab Notebook: here
+* *Jupyter Notebook*: here
+* *GoogleColab Notebook*: here
 
 ### Fully non-linear inversion
 The localization process using fully non-limear inversion is described in this Jupyter Notebook using data from the mobile audio-video array.
 The notebook can also be executed on Google Colab.
 
-* Jupyter Notebook: here
-* GoogleColab Notebook: here
+* *Jupyter Notebook*: here
+* *GoogleColab Notebook*: here
 
 ## Simulated annealing for optimizing the placement of the hydrophones
+
+* *Jupyter Notebook*: here
+* *GoogleColab Notebook*: here
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/bJMbtHWPlEg/0.jpg)](http://www.youtube.com/watch?v=bJMbtHWPlEg)
 
