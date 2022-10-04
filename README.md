@@ -20,20 +20,20 @@ Acoustic localization in performed using either linearized inversion or fully no
 The localization process using linearized inversion is described in this Jupyter Notebook using data from the large audio-video array.
 The notebook can also be executed on Google Colab.
 
-* *Jupyter Notebook*: here
-* *GoogleColab Notebook*: here
+* **Jupyter Notebook**: here
+* **GoogleColab Notebook**: here
 
 ### Fully non-linear inversion
 The localization process using fully non-limear inversion is described in this Jupyter Notebook using data from the mobile audio-video array.
 The notebook can also be executed on Google Colab.
 
-* *Jupyter Notebook*: here
-* *GoogleColab Notebook*: here
+* **Jupyter Notebook**: here
+* **GoogleColab Notebook**: here
 
 ## Simulated annealing for optimizing the placement of the hydrophones
 
-* *Jupyter Notebook*: here
-* *GoogleColab Notebook*: here
+* **Jupyter Notebook**: here
+* **GoogleColab Notebook**: here
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/bJMbtHWPlEg/0.jpg)](http://www.youtube.com/watch?v=bJMbtHWPlEg)
 
