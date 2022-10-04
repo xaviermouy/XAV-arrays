@@ -8,12 +8,8 @@ This repository contains all the necessary information to assemble, operate, dep
      alt="XAVarrays"
      style="float: left; margin-right: 10px;" />
 
-## Building and deploying the XAV arrays
-### Large audio-video array
-
-### Mini audio-video array
-
-### Mobile audio-video array
+## Building and deploying the audio-video arrays
+Building instructions and suggested deployment procedures can be found in the Supplementary Information of the paper. Deploymnet log sheets and and check lists can be found in the [logsheets](https://github.com/xaviermouy/XAV-arrays/tree/main/logsheets/) folder.
 
 
 ## 3D acoustic localization
@@ -29,9 +25,9 @@ The notebook can also be directly executed on Google Collab here.
 The localization process using fully non-limear inversion is described in this Jupyter Notebook using data from the mobile audio-video array.
 The notebook can also be directly executed on Google Collab here.
 
-## Simulated annealing for optiming the placement of the hydrophones
+## Simulated annealing for optimizing the placement of the hydrophones
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/bJMbtHWPlEg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/bJMbtHWPlEg/0.jpg)](http://www.youtube.com/watch?v=bJMbtHWPlEg)
 
 ## Status
 This page is still under construction...
