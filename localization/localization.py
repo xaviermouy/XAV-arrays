@@ -129,7 +129,7 @@ class LinearizedInversion():
                 data_misfit = np.array([[np.nan]])
             else:
                 raise err
-        return m, data_misfit[0, 0]
+        return np.array(m), data_misfit[0, 0]
 
     @staticmethod
     def calc_data_error(tdoa_sec, m, sound_speed_mps,hydrophones_config, hydrophone_pairs):
@@ -193,6 +193,7 @@ class LinearizedInversion():
             idx=0
             while stop == False:
                 idx=idx+1
+                print(idx)
                 # Linear inversion
                 m_it, data_misfit_it = LinearizedInversion.solve_iterative_ML(d, hydrophones_coords_np, hydrophone_pairs_np, m, V, damping_factor, verbose=verbose)
                 # Save model and data misfit for each iteration
@@ -217,6 +218,7 @@ class LinearizedInversion():
                 #                   )
                 #      ],
                 #     ignore_index=True)
+
                 iterations_logs = pd.concat(
                     [iterations_logs,
                      pd.DataFrame(data = {'x': [m_it[0,0]],

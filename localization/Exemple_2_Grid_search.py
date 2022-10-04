@@ -23,12 +23,70 @@ import localization
 # localization_config_file = r'.\mobile-array\localization_config_mobile_array.yaml'
 # infile = r'.\mobile-array\data\671404070.190921010008.wav'
 
-#mini copper
-deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\deployment_info.csv'
-hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\hydrophones_config_05-MILL.csv'
-detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\detection_config_mini_array.yaml'
-localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\localization_config_mini_array.yaml'
-infile = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\671404070.190801233653.wav'
+# #mini copper
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\hydrophones_config_05-MILL.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\detection_config_mini_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\localization_config_mini_array.yaml'
+# infile = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\671404070.190801233653.wav'
+
+# #mini ROV
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_ROV\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_ROV\hydrophones_config_05-MILL.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_ROV\detection_config_mini_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_ROV\localization_config_mini_array.yaml'
+# infile = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_ROV\671404070.190801170932.wav'
+
+# #mobile coppers
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_coppers\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_coppers\hydrophones_config_HI-201909.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_coppers\detection_config_mobile_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_coppers\localization_config_mobile_array.yaml'
+# infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_coppers\671404070.190921010008.wav'
+
+# #mobile copper-goby
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_copper-goby\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_copper-goby\hydrophones_config_HI-201909.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_copper-goby\detection_config_mobile_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_copper-goby\localization_config_mobile_array.yaml'
+# infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_copper-goby\671404070.190918233146.wav'
+
+# #mobile not-goby
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_not-goby\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_not-goby\hydrophones_config_HI-201909.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_not-goby\detection_config_mobile_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_not-goby\localization_config_mobile_array.yaml'
+# infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_not-goby\671404070.190916182624.wav'
+
+
+# #mobile projector at 0 degrees
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\hydrophones_config_MCP-20200910.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\detection_config_mobile_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\localization_config_mobile_array.yaml'
+# infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\5147.200910210925.wav'
+
+# #mobile projector at 90 degrees
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\hydrophones_config_MCP-20200910.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\detection_config_mobile_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\localization_config_mobile_array.yaml'
+# infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\5147.200910212027.wav'
+
+# #mobile projector at 180 degrees
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\hydrophones_config_MCP-20200910.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\detection_config_mobile_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\localization_config_mobile_array.yaml'
+# infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\5147.200910212248.wav'
+
+#mobile projector at 270 degrees
+deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\deployment_info.csv'
+hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\hydrophones_config_MCP-20200910.csv'
+detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\detection_config_mobile_array.yaml'
+localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\localization_config_mobile_array.yaml'
+infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\5147.200910212517.wav'
+
 
 
 # show deployment file
@@ -100,7 +158,7 @@ localizations, PPDs = localization.GridSearch.run_localization(audio_files, dete
 # Show that some detections with no localizations (nan) -> did not converge
 
 # Filter localization results to only keep results with low uncertainty
-localizations.filter("x_err_span < 1 & y_err_span < 1 & z_err_span < 1", inplace=True)
+#localizations.filter("x_err_span < 1 & y_err_span < 1 & z_err_span < 1", inplace=True)
 
 # plot spectrogram with measurements filtered
 tools.plot_single_channel(audio_files['path'][detection_config['AUDIO']['channel']],

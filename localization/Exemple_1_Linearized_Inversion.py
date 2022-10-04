@@ -21,6 +21,16 @@ deployment_info_file = r'.\large-array\deployment_info.csv'
 hydrophones_config_file = r'.\large-array\hydrophones_config_07-HI.csv'
 detection_config_file = r'.\large-array\detection_config_large_array.yaml'
 localization_config_file = r'.\large-array\localization_config_large_array.yaml'
+infile = r'.\large-array\data\AMAR173.4.20190920T163858Z.wav'
+
+
+# # lingcod
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\large_lingcod\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\large_lingcod\hydrophones_config_04-OGD.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\large_lingcod\detection_config_large_array_lingcod.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\large_lingcod\localization_config_large_array_lingcod.yaml'
+# infile = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\large_lingcod\data\AMAR173.1.20190617T151307Z.wav'
+
 
 # show deployment file
 Deployment = DeploymentInfo()
@@ -36,7 +46,6 @@ detection_config = ecosound.core.tools.read_yaml(detection_config_file)
 localization_config = ecosound.core.tools.read_yaml(localization_config_file)
 
 # Look up data files for all channels
-infile = r'.\large-array\data\AMAR173.4.20190920T163858Z.wav'
 audio_files = tools.find_audio_files(infile, hydrophones_config)
 
 # plot all data 
@@ -97,4 +106,6 @@ localization.plot_localizations3D(localizations=localizations, hydrophones=hydro
 # Show plot of convergence for a given localization
 
 # save as csv
-#localizations.to_csv('large_array_localizations.csv')
+localizations.to_csv('localization_results.csv')
+localizations.data.drop(columns=['iterations_logs'],inplace=True)
+localizations.to_netcdf('localization_results.nc')
