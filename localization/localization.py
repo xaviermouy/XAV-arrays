@@ -193,7 +193,7 @@ class LinearizedInversion():
             idx=0
             while stop == False:
                 idx=idx+1
-                print(idx)
+                #print(idx)
                 # Linear inversion
                 m_it, data_misfit_it = LinearizedInversion.solve_iterative_ML(d, hydrophones_coords_np, hydrophone_pairs_np, m, V, damping_factor, verbose=verbose)
                 # Save model and data misfit for each iteration
@@ -303,10 +303,10 @@ class LinearizedInversion():
         localizations.metadata['measurements_name'] = [['x', 'y', 'z', 'x_err_low','x_err_high','x_err_span','y_err_low','y_err_high','y_err_span','z_err_low','z_err_high','z_err_span','tdoa_errors_std']]
 
         # Go through all detections
-        print('LOCALIZATION')
+        #print('LOCALIZATION')
         for detec_idx, detec in detections.data.iterrows():
 
-            print( str(detec_idx+1) + '/' + str(len(detections)))
+            #print( str(detec_idx+1) + '/' + str(len(detections)))
 
             # load data from all channels for that detection
             waveform_stack = tools.stack_waveforms(audio_files, detec, TDOA_max_sec)
@@ -381,7 +381,7 @@ class LinearizedInversion():
                 localizations.data = detec
             else:
                 localizations.data = pd.concat([localizations.data, detec], axis=0)
-
+        print('...done')
         return localizations
 
 
@@ -406,7 +406,8 @@ class GridSearch():
         hydrophones_coord = hydrophones_config[['x','y','z']].to_numpy()
         tdoas = predict_tdoa(points_coord, sound_speed_mps, hydrophones_coord, np.array(hydrophone_pairs))        
         np.savez(outfile,tdoa=tdoas,grid_coord=sources,x_limits=x_limits,y_limits=y_limits,z_limits=z_limits,spacing=spacing,ref_channel=ref_channel,sound_speed_mps=sound_speed_mps, hydrophones_coord=hydrophones_coord)
-        return sources, sources_tdoa
+        print('...done')
+        #return sources, sources_tdoa
 
     @staticmethod
     def load_tdoa_grid(grid_file):
@@ -455,7 +456,7 @@ class GridSearch():
         localizations.metadata['measurer_version'] = '0.1'
         localizations.metadata['measurements_name'] = [['x', 'y', 'z', 'x_err_low','x_err_high','x_err_span','y_err_low','y_err_high','y_err_span','z_err_low','z_err_high','z_err_span','tdoa_errors_std','PPD']]
 
-        print('LOCALIZATION')
+        #print('LOCALIZATION')
         # Go through all detections and resolve localization
         m = np.zeros([len(hydrophone_pairs),len(detections)])
         tdoa_errors = np.zeros([len(hydrophone_pairs),len(detections)])
@@ -464,7 +465,7 @@ class GridSearch():
         PPDs=[[]]*len(detections)
         for detec_idx, detec in detections.data.iterrows():
 
-            print( str(detec_idx+1) + '/' + str(len(detections)))
+            #print( str(detec_idx+1) + '/' + str(len(detections)))
 
             # load data from all channels for that detection
             waveform_stack = tools.stack_waveforms(audio_files, detec, TDOA_max_sec)
@@ -503,7 +504,7 @@ class GridSearch():
         # Estimate localization uncertainty (credibility intervals)
         for detec_idx, detec in detections.data.iterrows():
             if valid_tdoas[detec_idx]:
-                print(str(detec_idx))
+                #print(str(detec_idx))
                 # unnormalized likelihood
                 L = np.exp(-grid_data_misfit[detec_idx]**2 /(2*(tdoa_errors_std**2)))
                 # normalized PPD
@@ -572,6 +573,7 @@ class GridSearch():
                 localizations.data = detec
             else:
                 localizations.data = pd.concat([localizations.data, detec], axis=0)
+        print('...done')
     
         return localizations, PPDs
 
@@ -763,12 +765,13 @@ def plot_localizations3D(localizations=None, hydrophones=None):
                      c='blue',
                      #marker=params['loc_marker'].values[0],
                      alpha=1,
+                     #s=2
                      )
-        # plot uncertainties
+        #plot uncertainties
         for idx, loc_point in loc_data.iterrows():
             lw=1
             c ='red'
-            alph=0.5
+            alph=1
             ax.plot3D([loc_point['x_err_low'],loc_point['x_err_high']],
                       [loc_point['y'],loc_point['y']],
                       [loc_point['z'],loc_point['z']],
@@ -798,6 +801,8 @@ def plot_localizations3D(localizations=None, hydrophones=None):
     ax.set_zlabel('Z (m)')
     ax.set_box_aspect([1,1,1])
     fig.tight_layout()
+    return fig, ax
+    
     
 def find_half_CI_value(values,start_index,stop_val, step):
     

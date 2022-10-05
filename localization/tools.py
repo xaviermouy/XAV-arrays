@@ -187,9 +187,10 @@ def plot_all_channels(audio_files,frame, window_type, nfft, step, fmin, fmax, de
     if detections:
         graph_spectros.add_annotation(detections, panel=detections_channel, color='green',label='Detections')
         graph_waveforms.add_annotation(detections, panel=detections_channel, color='green',label='Detections')    
-
-    graph_spectros.show()
-    graph_waveforms.show()
+    #graph_spectros.show()
+    #graph_waveforms.show()
+    return graph_spectros, graph_waveforms
+  
 
 def plot_single_channel(audio_file,frame, window_type, nfft, step, fmin, fmax, channel=0,detections=None, verbose=True):
 
@@ -211,4 +212,5 @@ def plot_single_channel(audio_file,frame, window_type, nfft, step, fmin, fmax, c
         graph.add_annotation(detections, panel=1, color='green', label='Detections') # overlay detections on spectrogram plot
 
     graph.colormap = 'binary'
-    graph.show()
+    #graph.show()
+    return graph

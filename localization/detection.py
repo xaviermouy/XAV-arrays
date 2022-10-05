@@ -73,5 +73,6 @@ def run_detector(infile, channel, config, chunk=None, deployment_file=None):
                                audio_file_extension=file_ext,
                                audio_file_start_date=ecosound.core.tools.filename_to_datetime(sound.file_full_path)[0]
                                )
+    print('...done')
 
     return detections

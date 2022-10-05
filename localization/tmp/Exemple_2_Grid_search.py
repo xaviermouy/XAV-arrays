@@ -17,11 +17,11 @@ import localization
 
 
 #load configuration files - Config files mobile array - Horny Island - Copper Rockfish
-# deployment_info_file = r'.\mobile-array\deployment_info.csv'
-# hydrophones_config_file = r'.\mobile-array\hydrophones_config_HI-201909.csv'
-# detection_config_file = r'.\mobile-array\detection_config_mobile_array.yaml'
-# localization_config_file = r'.\mobile-array\localization_config_mobile_array.yaml'
-# infile = r'.\mobile-array\data\671404070.190921010008.wav'
+deployment_info_file = r'.\mobile-array\deployment_info.csv'
+hydrophones_config_file = r'.\mobile-array\hydrophones_config_HI-201909.csv'
+detection_config_file = r'.\mobile-array\detection_config_mobile_array.yaml'
+localization_config_file = r'.\mobile-array\localization_config_mobile_array.yaml'
+infile = r'.\mobile-array\data\671404070.190921010008.wav'
 
 # #mini copper
 # deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mini_copper\deployment_info.csv'
@@ -80,12 +80,12 @@ import localization
 # localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\localization_config_mobile_array.yaml'
 # infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\5147.200910212248.wav'
 
-#mobile projector at 270 degrees
-deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\deployment_info.csv'
-hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\hydrophones_config_MCP-20200910.csv'
-detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\detection_config_mobile_array.yaml'
-localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\localization_config_mobile_array.yaml'
-infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\5147.200910212517.wav'
+# #mobile projector at 270 degrees
+# deployment_info_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\deployment_info.csv'
+# hydrophones_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\hydrophones_config_MCP-20200910.csv'
+# detection_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\detection_config_mobile_array.yaml'
+# localization_config_file = r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\localization_config_mobile_array.yaml'
+# infile =r'C:\Users\xavier.mouy\Documents\Publications\Mouy.etal_2022_XAV-Arrays\manuscript\data\mobile_projector\5147.200910212517.wav'
 
 
 
@@ -179,5 +179,5 @@ localization.plot_localizations3D(localizations=localizations, hydrophones=hydro
 #PPDs[0].PPD.sum("z").plot()
 
 # save as csv
-localizations.to_csv('localization_results.csv')
-localizations.to_netcdf('localization_results.nc')
+#localizations.to_csv('localization_results.csv')
+#localizations.to_netcdf('localization_results.nc')
