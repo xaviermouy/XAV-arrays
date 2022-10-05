@@ -25,17 +25,17 @@ Two small sets of acoustic data from the large and mobile arrays are provided in
 Acoustic localization is performed using either linearized inversion or fully non-linear inversion. We provide python code for both approaches. 
 
 * **Linearized inversion**:
-    * Jupyter Notebook: here
-    * GoogleColab Notebook: here
+    * Jupyter Notebook: [here](https://github.com/xaviermouy/XAV-arrays/blob/main/localization/Localization_linearized_inversion.ipynb)
+    * GoogleColab Notebook: -> not done yet
 
 * **Fully non-linear inversion**:
-    * Jupyter Notebook: here
-    * GoogleColab Notebook: here
+    * Jupyter Notebook: [here](https://github.com/xaviermouy/XAV-arrays/blob/main/localization/Localization_non-inear_inversion.ipynb)
+    * GoogleColab Notebook: -> not done yet
 
 ## Simulated annealing for optimizing hydrophones placement
 
-* Jupyter Notebook: here
-* GoogleColab Notebook: here
+* Jupyter Notebook: -> not done yet
+* GoogleColab Notebook: -> not done yet
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/bJMbtHWPlEg/0.jpg)](http://www.youtube.com/watch?v=bJMbtHWPlEg)
 
