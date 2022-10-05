@@ -29,7 +29,7 @@ Acoustic localization is performed using either linearized inversion or fully no
     * GoogleColab Notebook: -> not done yet
 
 * **Fully non-linear inversion**:
-    * Jupyter Notebook: [here](https://github.com/xaviermouy/XAV-arrays/blob/main/localization/Localization_non-inear_inversion.ipynb)
+    * Jupyter Notebook: [here](https://github.com/xaviermouy/XAV-arrays/blob/main/localization/Localization_non-linear_inversion.ipynb)
     * GoogleColab Notebook: -> not done yet
 
 ## Simulated annealing for optimizing hydrophones placement
