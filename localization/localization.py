@@ -1,26 +1,28 @@
-import sys
-sys.path.append(r"C:\Users\xavier.mouy\Documents\GitHub\ecosound") # Adds higher directory to python modules path.
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Oct 20 15:42:59 2022
 
-import numpy as np
+@author: xavier.mouy
+"""
+
 import pandas as pd
 import mpl_toolkits.mplot3d
 import matplotlib.pyplot as plt
 import time
-import os
 from ecosound.core.audiotools import upsample
 import scipy.signal
-#from numba import njit
-from numba import njit, prange
+from tqdm import tqdm
 
+# from numba import njit
+from numba import njit, prange
 import os
 import sys
-sys.path.append(r'C:\Users\xavier.mouy\Documents\GitHub\ecosound') # Adds higher directory to python modules path.
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d
 import matplotlib.cm
-#import scipy.spatial
+
+# import scipy.spatial
 import numpy as np
 import datetime
 import math
@@ -32,39 +34,65 @@ from ecosound.detection.detector_builder import DetectorFactory
 from ecosound.visualization.grapher_builder import GrapherFactory
 import ecosound.core.tools
 from ecosound.core.tools import derivative_1d, envelope, read_yaml
-#from localizationlib import euclidean_dist, calc_hydrophones_distances, calc_tdoa, defineReceiverPairs, defineJacobian, predict_tdoa, linearized_inversion, solve_iterative_ML, defineCubeVolumeGrid, defineSphereVolumeGrid
+
+# from localizationlib import euclidean_dist, calc_hydrophones_distances, calc_tdoa, defineReceiverPairs, defineJacobian, predict_tdoa, linearized_inversion, solve_iterative_ML, defineCubeVolumeGrid, defineSphereVolumeGrid
 import platform
 import matplotlib.pyplot as plt
 import tools
 import mpl_toolkits.mplot3d
 
 
-class LinearizedInversion():
-    
+class LinearizedInversion:
     @staticmethod
-    #@njit(parallel=False)
+    # @njit(parallel=False)
     def defineJacobian(R, S, V, Rpairs):
-        #unknowns = ['x','y','z']    # unknowns: 3D coordinates of sound source
-        N = R.shape[0] - 1          # nb of measurements (TDOAs)
-        M = S.shape[1]              # number of model parameters (unknowns)
-        nsources = S.shape[0]       # number of sources
-        J = [None] * nsources       # initiaization
+        # unknowns = ['x','y','z']    # unknowns: 3D coordinates of sound source
+        N = R.shape[0] - 1  # nb of measurements (TDOAs)
+        M = S.shape[1]  # number of model parameters (unknowns)
+        nsources = S.shape[0]  # number of sources
+        J = [None] * nsources  # initiaization
         # for each source location
         for idx in range(nsources):
-            #s = S.iloc[idx]
-            #j = np.full([N, M], np.nan)  # initialization of Jacobian for that source location
-            j = np.zeros((N,M),dtype=np.float64)
+            # s = S.iloc[idx]
+            # j = np.full([N, M], np.nan)  # initialization of Jacobian for that source location
+            j = np.zeros((N, M), dtype=np.float64)
             for i in range(N):
-                p1 = Rpairs[i,0]        # receiver #1 ID
-                p2 = Rpairs[i,1]        # receiver #2 ID
+                p1 = Rpairs[i, 0]  # receiver #1 ID
+                p2 = Rpairs[i, 1]  # receiver #2 ID
                 for kk in range(M):
-                    Term1 = (1/V)*0.5*((((S[idx,0]-R[p1,0])**2)+((S[idx,1]-R[p1,1])**2)+((S[idx,2]-R[p1,2])**2))**(-0.5))*2*(S[idx,kk]-R[p1,kk])
-                    Term2 = (1/V)*0.5*((((S[idx,0]-R[p2,0])**2)+((S[idx,1]-R[p2,1])**2)+((S[idx,2]-R[p2,2])**2))**(-0.5))*2*(S[idx,kk]-R[p2,kk])
+                    Term1 = (
+                        (1 / V)
+                        * 0.5
+                        * (
+                            (
+                                ((S[idx, 0] - R[p1, 0]) ** 2)
+                                + ((S[idx, 1] - R[p1, 1]) ** 2)
+                                + ((S[idx, 2] - R[p1, 2]) ** 2)
+                            )
+                            ** (-0.5)
+                        )
+                        * 2
+                        * (S[idx, kk] - R[p1, kk])
+                    )
+                    Term2 = (
+                        (1 / V)
+                        * 0.5
+                        * (
+                            (
+                                ((S[idx, 0] - R[p2, 0]) ** 2)
+                                + ((S[idx, 1] - R[p2, 1]) ** 2)
+                                + ((S[idx, 2] - R[p2, 2]) ** 2)
+                            )
+                            ** (-0.5)
+                        )
+                        * 2
+                        * (S[idx, kk] - R[p2, kk])
+                    )
                     j[i][kk] = Term2 - Term1
-                 # for kk, unknown in enumerate(unknowns):
-                 #     Term1 = (1/V)*0.5*((((s.x-R.x[p1])**2)+((s.y-R.y[p1])**2)+((s.z-R.z[p1])**2))**(-0.5))*2*(s[unknown]-R[unknown][p1])
-                 #     Term2 = (1/V)*0.5*((((s.x-R.x[p2])**2)+((s.y-R.y[p2])**2)+((s.z-R.z[p2])**2))**(-0.5))*2*(s[unknown]-R[unknown][p2])
-                 #     j[i][kk] = Term2 - Term1
+                # for kk, unknown in enumerate(unknowns):
+                #     Term1 = (1/V)*0.5*((((s.x-R.x[p1])**2)+((s.y-R.y[p1])**2)+((s.z-R.z[p1])**2))**(-0.5))*2*(s[unknown]-R[unknown][p1])
+                #     Term2 = (1/V)*0.5*((((s.x-R.x[p2])**2)+((s.y-R.y[p2])**2)+((s.z-R.z[p2])**2))**(-0.5))*2*(s[unknown]-R[unknown][p2])
+                #     j[i][kk] = Term2 - Term1
             J[idx] = j  # stacks jacobians for each source
         if nsources == 1:
             J = J[0]
@@ -78,10 +106,18 @@ class LinearizedInversion():
         errLoc_Z = [None] * nsources
         errLoc_RMS = [None] * nsources
         for i in range(nsources):
-            Cm = NoiseVariance * np.linalg.inv(np.dot(np.transpose(J[i]), J[i]))  # covariance matrix of the model
-            errLoc_X[i], errLoc_Y[i], errLoc_Z[i] = np.sqrt(np.diag(Cm))  # uncertainty (std) along each axis
-            errLoc_RMS[i] = np.sqrt(errLoc_X[i]**2 + errLoc_Y[i]**2 + errLoc_Z[i]**2)  # overall uncertainty (RMS)
-        Uncertainty = pd.DataFrame({'x': errLoc_X, 'y': errLoc_Y, 'z': errLoc_Z, 'rms': errLoc_RMS})
+            Cm = NoiseVariance * np.linalg.inv(
+                np.dot(np.transpose(J[i]), J[i])
+            )  # covariance matrix of the model
+            errLoc_X[i], errLoc_Y[i], errLoc_Z[i] = np.sqrt(
+                np.diag(Cm)
+            )  # uncertainty (std) along each axis
+            errLoc_RMS[i] = np.sqrt(
+                errLoc_X[i] ** 2 + errLoc_Y[i] ** 2 + errLoc_Z[i] ** 2
+            )  # overall uncertainty (RMS)
+        Uncertainty = pd.DataFrame(
+            {"x": errLoc_X, "y": errLoc_Y, "z": errLoc_Z, "rms": errLoc_RMS}
+        )
         return Uncertainty
 
     @staticmethod
@@ -91,84 +127,136 @@ class LinearizedInversion():
         # Calculates localization uncertainty for each source
         Uncertainties = LinearizedInversion.getUncertainties(J, NoiseVariance)
         # Get max uncertainty
-        #E = max(Uncertainties.rms)
+        # E = max(Uncertainties.rms)
         E = np.mean(Uncertainties.rms)
-        #E = np.median(Uncertainties.rms)
+        # E = np.median(Uncertainties.rms)
         return E
 
     @staticmethod
-    def solve_iterative_ML(d, hydrophones_coords, hydrophone_pairs, m, V, damping_factor, verbose=True):
+    def solve_iterative_ML(
+        d,
+        hydrophones_coords,
+        hydrophone_pairs,
+        m,
+        V,
+        damping_factor,
+        verbose=True,
+    ):
         # Define the Jacobian matrix: Eq. (5) in Mouy et al. (2018)
-        A = LinearizedInversion.defineJacobian(hydrophones_coords, m, V, hydrophone_pairs)
+        A = LinearizedInversion.defineJacobian(
+            hydrophones_coords, m, V, hydrophone_pairs
+        )
         # Predicted TDOA at m (forward problem): Eq. (1) in Mouy et al. (2018)
         d0 = predict_tdoa(m, V, hydrophones_coords, hydrophone_pairs)
         # Reformulation of the problem
-        delta_d = d-d0 # Delta d: measured data - predicted data
+        delta_d = d - d0  # Delta d: measured data - predicted data
         try:
             # Resolving by creeping approach(ML inverse for delta m): Eq. (6) in Mouy et al. (2018)
-            delta_m = np.dot(np.dot(np.linalg.inv(np.dot(A.transpose(),A)),A.transpose()),delta_d) #general inverse
+            delta_m = np.dot(
+                np.dot(np.linalg.inv(np.dot(A.transpose(), A)), A.transpose()),
+                delta_d,
+            )  # general inverse
             # New model: Eq. (7) in Mouy et al. (2018)
-            #m_new = m.iloc[0].values + (damping_factor*delta_m.transpose())
-            m = m + (damping_factor*delta_m.transpose())
-            #m['x'] = m_new[0,0]
-            #m['y'] = m_new[0,1]
-            #m['z'] = m_new[0,2]
+            # m_new = m.iloc[0].values + (damping_factor*delta_m.transpose())
+            m = m + (damping_factor * delta_m.transpose())
+            # m['x'] = m_new[0,0]
+            # m['y'] = m_new[0,1]
+            # m['z'] = m_new[0,2]
             # ## jumping approach
             # #m=inv(A'*CdInv*A)*A'*CdInv*dprime; % retrieved model using ML
             # Data misfit
-            part1 = np.dot(A,delta_m)-delta_d
+            part1 = np.dot(A, delta_m) - delta_d
             data_misfit = np.dot(part1.transpose(), part1)
         except np.linalg.LinAlgError as err:
-            if 'Singular matrix' in str(err):
+            if "Singular matrix" in str(err):
                 if verbose:
-                    print('Error when inverting for delta_m: Singular Matrix')
-                #m['x'] = np.nan
-                #m['y'] = np.nan
-                #m['z'] = np.nan
-                m=[[np.nan,np.nan,np.nan]]
+                    print("Error when inverting for delta_m: Singular Matrix")
+                # m['x'] = np.nan
+                # m['y'] = np.nan
+                # m['z'] = np.nan
+                m = [[np.nan, np.nan, np.nan]]
                 data_misfit = np.array([[np.nan]])
             else:
                 raise err
         return np.array(m), data_misfit[0, 0]
 
     @staticmethod
-    def calc_data_error(tdoa_sec, m, sound_speed_mps,hydrophones_config, hydrophone_pairs):
-        """ Calculates tdoa measurement errors. Eq. (9) in Mouy et al. 2018"""
-        hydrophones_coord = hydrophones_config[['x','y','z']].to_numpy()
-        tdoa_m = predict_tdoa(m, sound_speed_mps, hydrophones_coord, np.array(hydrophone_pairs))
-        Q = m.shape[0] # nb of localizations
-        M = m.shape[1] # nb of unkmowns
-        N = len(tdoa_sec) # nb of data
-        error_std = np.sqrt((1/(Q*(N-M))) * (sum((tdoa_sec-tdoa_m)**2)))
+    def calc_data_error(
+        tdoa_sec, m, sound_speed_mps, hydrophones_config, hydrophone_pairs
+    ):
+        """Calculates tdoa measurement errors. Eq. (9) in Mouy et al. 2018"""
+        hydrophones_coord = hydrophones_config[["x", "y", "z"]].to_numpy()
+        tdoa_m = predict_tdoa(
+            m, sound_speed_mps, hydrophones_coord, np.array(hydrophone_pairs)
+        )
+        Q = m.shape[0]  # nb of localizations
+        M = m.shape[1]  # nb of unkmowns
+        N = len(tdoa_sec)  # nb of data
+        error_std = np.sqrt(
+            (1 / (Q * (N - M))) * (sum((tdoa_sec - tdoa_m) ** 2))
+        )
         return error_std
 
     @staticmethod
-    def calc_loc_errors(tdoa_errors_std, m, sound_speed_mps, hydrophones_config, hydrophone_pairs):
-        """ Calculates localization errors. Eq. (8) in Mouy et al. 2018."""
-        hydrophones_coord = hydrophones_config[['x','y','z']].to_numpy()
-        A = LinearizedInversion.defineJacobian(hydrophones_coord, m, sound_speed_mps, np.array(hydrophone_pairs))
-        Cm = (tdoa_errors_std**2) * np.linalg.inv(np.dot(A.transpose(),A)) # Model covariance matrix for IID
+    def calc_loc_errors(
+        tdoa_errors_std,
+        m,
+        sound_speed_mps,
+        hydrophones_config,
+        hydrophone_pairs,
+    ):
+        """Calculates localization errors. Eq. (8) in Mouy et al. 2018."""
+        hydrophones_coord = hydrophones_config[["x", "y", "z"]].to_numpy()
+        A = LinearizedInversion.defineJacobian(
+            hydrophones_coord, m, sound_speed_mps, np.array(hydrophone_pairs)
+        )
+        Cm = (tdoa_errors_std**2) * np.linalg.inv(
+            np.dot(A.transpose(), A)
+        )  # Model covariance matrix for IID
         err_std = np.sqrt(np.diag(Cm))
-        return pd.DataFrame({'x_std': [err_std[0]], 'y_std': [err_std[1]], 'z_std': [err_std[2]]})
-    
+        return pd.DataFrame(
+            {
+                "x_std": [err_std[0]],
+                "y_std": [err_std[1]],
+                "z_std": [err_std[2]],
+            }
+        )
+
     @staticmethod
-    def solve(d, hydrophones_coords,hydrophone_pairs,inversion_params, sound_speed_mps, verbose=True, doplot=False): #linearized_inversion(d, hydrophones_coords,hydrophone_pairs,inversion_params, sound_speed_mps, doplot=False):
+    def solve(
+        d,
+        hydrophones_coords,
+        hydrophone_pairs,
+        inversion_params,
+        sound_speed_mps,
+        verbose=True,
+        doplot=False,
+    ):  # linearized_inversion(d, hydrophones_coords,hydrophone_pairs,inversion_params, sound_speed_mps, doplot=False):
         # convert parameters to numpy arrays
-        damping_factor = np.array(inversion_params['damping_factor'])
-        Tdelta_m = np.array(inversion_params['stop_delta_m'])
+        damping_factor = np.array(inversion_params["damping_factor"])
+        Tdelta_m = np.array(inversion_params["stop_delta_m"])
         V = np.array(sound_speed_mps)
-        max_iteration = np.array(inversion_params['stop_max_iteration'])
-        
-        hydrophones_coords_np= hydrophones_coords[['x','y','z']].to_numpy()
+        max_iteration = np.array(inversion_params["stop_max_iteration"])
+
+        hydrophones_coords_np = hydrophones_coords[["x", "y", "z"]].to_numpy()
         hydrophone_pairs_np = np.array(hydrophone_pairs)
-        
+
         # define starting model(s)
-        start_models = [inversion_params['start_model']]
-        if inversion_params['start_model_repeats'] > 1:
-            x_bounds = [hydrophones_coords['x'].min(), hydrophones_coords['x'].max()]
-            y_bounds = [hydrophones_coords['y'].min(), hydrophones_coords['y'].max()]
-            z_bounds = [hydrophones_coords['z'].min(), hydrophones_coords['z'].max()]
-            for m_nb in range(1, inversion_params['start_model_repeats']):
+        start_models = [inversion_params["start_model"]]
+        if inversion_params["start_model_repeats"] > 1:
+            x_bounds = [
+                hydrophones_coords["x"].min(),
+                hydrophones_coords["x"].max(),
+            ]
+            y_bounds = [
+                hydrophones_coords["y"].min(),
+                hydrophones_coords["y"].max(),
+            ]
+            z_bounds = [
+                hydrophones_coords["z"].min(),
+                hydrophones_coords["z"].max(),
+            ]
+            for m_nb in range(1, inversion_params["start_model_repeats"]):
                 x_tmp = np.random.uniform(low=x_bounds[0], high=x_bounds[1])
                 y_tmp = np.random.uniform(low=y_bounds[0], high=y_bounds[1])
                 z_tmp = np.random.uniform(low=z_bounds[0], high=z_bounds[1])
@@ -178,24 +266,34 @@ class LinearizedInversion():
         data_misfit_stack = []
         for start_model in start_models:
             # current starting model
-            #m = pd.DataFrame({'x': [start_model[0]], 'y': [start_model[1]], 'z': [start_model[2]]})
-            m = np.array([[start_model[0],start_model[1],start_model[2]]])
+            # m = pd.DataFrame({'x': [start_model[0]], 'y': [start_model[1]], 'z': [start_model[2]]})
+            m = np.array([[start_model[0], start_model[1], start_model[2]]])
             # Keeps track of values for each iteration
-            iterations_logs = pd.DataFrame({
-                'x': [start_model[0]],
-                'y': [start_model[1]],
-                'z': [start_model[2]],
-                'norm': np.nan,
-                'data_misfit': np.nan,
-                })
+            iterations_logs = pd.DataFrame(
+                {
+                    "x": [start_model[0]],
+                    "y": [start_model[1]],
+                    "z": [start_model[2]],
+                    "norm": np.nan,
+                    "data_misfit": np.nan,
+                }
+            )
             # Start iterations
             stop = False
-            idx=0
+            idx = 0
             while stop == False:
-                idx=idx+1
-                #print(idx)
+                idx = idx + 1
+                # print(idx)
                 # Linear inversion
-                m_it, data_misfit_it = LinearizedInversion.solve_iterative_ML(d, hydrophones_coords_np, hydrophone_pairs_np, m, V, damping_factor, verbose=verbose)
+                m_it, data_misfit_it = LinearizedInversion.solve_iterative_ML(
+                    d,
+                    hydrophones_coords_np,
+                    hydrophone_pairs_np,
+                    m,
+                    V,
+                    damping_factor,
+                    verbose=verbose,
+                )
                 # Save model and data misfit for each iteration
                 # iterations_logs = iterations_logs.append({
                 #     'x': m_it['x'].values[0],
@@ -220,403 +318,637 @@ class LinearizedInversion():
                 #     ignore_index=True)
 
                 iterations_logs = pd.concat(
-                    [iterations_logs,
-                     pd.DataFrame(data = {'x': [m_it[0,0]],
-                                          'y': [m_it[0,1]],
-                                          'z': [m_it[0,2]],
-                                          #'norm': np.sqrt(np.square(m_it).sum(axis=1)).values[0],
-                                          'norm': [np.linalg.norm(m_it - iterations_logs.iloc[-1][['x','y','z']].to_numpy(),np.inf)],
-                                          'data_misfit': [data_misfit_it],
-                                          }
-                                  )
-                     ],
-                    ignore_index=True)
+                    [
+                        iterations_logs,
+                        pd.DataFrame(
+                            data={
+                                "x": [m_it[0, 0]],
+                                "y": [m_it[0, 1]],
+                                "z": [m_it[0, 2]],
+                                #'norm': np.sqrt(np.square(m_it).sum(axis=1)).values[0],
+                                "norm": [
+                                    np.linalg.norm(
+                                        m_it
+                                        - iterations_logs.iloc[-1][
+                                            ["x", "y", "z"]
+                                        ].to_numpy(),
+                                        np.inf,
+                                    )
+                                ],
+                                "data_misfit": [data_misfit_it],
+                            }
+                        ),
+                    ],
+                    ignore_index=True,
+                )
 
                 # Update m
                 m = m_it
                 # stopping criteria
-                if idx>1:
-                     # norm of model diference
-                    #if (iterations_logs['norm'][idx] - iterations_logs['norm'][idx-1] <= Tdelta_m):
-                    if iterations_logs['norm'][idx] <= Tdelta_m:
+                if idx > 1:
+                    # norm of model diference
+                    # if (iterations_logs['norm'][idx] - iterations_logs['norm'][idx-1] <= Tdelta_m):
+                    if iterations_logs["norm"][idx] <= Tdelta_m:
                         stop = True
-                        #if np.isnan(m['x'].values[0]):
-                        if np.isnan(m[0,0]):
-                            converged=False # Due to singular matrix
+                        # if np.isnan(m['x'].values[0]):
+                        if np.isnan(m[0, 0]):
+                            converged = False  # Due to singular matrix
                             if verbose:
-                                print('Singular matrix - inversion hasn''t converged.')
+                                print(
+                                    "Singular matrix - inversion hasn"
+                                    "t converged."
+                                )
                         else:
-                            converged=True
-                    elif idx > max_iteration: # max iterations exceeded
+                            converged = True
+                    elif idx > max_iteration:  # max iterations exceeded
                         stop = True
-                        converged=False
+                        converged = False
                         if verbose:
-                            print('Max iterations reached - inversion hasn''t converged.')
+                            print(
+                                "Max iterations reached - inversion hasn"
+                                "t converged."
+                            )
                     # elif iterations_logs['norm'][idx] > iterations_logs['norm'][idx-1]: # if norm starts increasing -> then stop there
                     #     stop = True
                     #     converged=False
                     #     print('Norm increasing - inversion hasn''t converged.')
-                    #elif np.isnan(m['x'].values[0]):
-                    elif np.isnan(m[0,0]):
+                    # elif np.isnan(m['x'].values[0]):
+                    elif np.isnan(m[0, 0]):
                         stop = True
-                        converged=False
+                        converged = False
                         if verbose:
-                            print('Singular matrix - inversion hasn''t converged.')
-    
+                            print(
+                                "Singular matrix - inversion hasn"
+                                "t converged."
+                            )
+
             if not converged:
-                #m['x']=np.nan
-                #m['y']=np.nan
-                #m['z']=np.nan
-                m[0,0]=np.nan
-                m[0,1]=np.nan
-                m[0,2]=np.nan
+                # m['x']=np.nan
+                # m['y']=np.nan
+                # m['z']=np.nan
+                m[0, 0] = np.nan
+                m[0, 1] = np.nan
+                m[0, 2] = np.nan
             # Save results for each starting model
-            m_stack.append(m[0,:])
+            m_stack.append(m[0, :])
             iterations_logs_stack.append(iterations_logs)
-            data_misfit_stack.append(iterations_logs['data_misfit'].iloc[-1])
+            data_misfit_stack.append(iterations_logs["data_misfit"].iloc[-1])
         # Select results for starting model with best ending data misfit
         min_data_misfit = np.nanmin(data_misfit_stack)
         if np.isnan(min_data_misfit):
-            min_idx=0
+            min_idx = 0
         else:
             min_idx = data_misfit_stack.index(min_data_misfit)
         return m_stack[min_idx], iterations_logs_stack[min_idx]
-    
+
     @staticmethod
-    def run_localization(audio_files, detections, deployment_info, detection_config, hydrophones_config, localization_config, verbose=True):
+    def run_localization(
+        audio_files,
+        detections,
+        deployment_info,
+        detection_config,
+        hydrophones_config,
+        localization_config,
+        verbose=True,
+    ):
 
         # localization
-        sound_speed_mps = localization_config['ENVIRONMENT']['sound_speed_mps']
-        ref_channel = localization_config['TDOA']['ref_channel']
-        
+        sound_speed_mps = localization_config["ENVIRONMENT"]["sound_speed_mps"]
+        ref_channel = localization_config["TDOA"]["ref_channel"]
+
         # define search window based on hydrophone separation and sound speed
-        hydrophones_dist_matrix = tools.calc_hydrophones_distances(hydrophones_config)
-        TDOA_max_sec = np.max(hydrophones_dist_matrix)/sound_speed_mps
+        hydrophones_dist_matrix = tools.calc_hydrophones_distances(
+            hydrophones_config
+        )
+        TDOA_max_sec = np.max(hydrophones_dist_matrix) / sound_speed_mps
 
         # define hydrophone pairs
-        hydrophone_pairs = defineReceiverPairs(len(hydrophones_config), ref_receiver=ref_channel)
+        hydrophone_pairs = defineReceiverPairs(
+            len(hydrophones_config), ref_receiver=ref_channel
+        )
 
         # Prepare localization object
         localizations = Measurement()
-        localizations.metadata['measurer_name'] = 'Linearized inversion'
-        localizations.metadata['measurer_version'] = '0.1'
-        localizations.metadata['measurements_name'] = [['x', 'y', 'z', 'x_err_low','x_err_high','x_err_span','y_err_low','y_err_high','y_err_span','z_err_low','z_err_high','z_err_span','tdoa_errors_std']]
+        localizations.metadata["measurer_name"] = "Linearized inversion"
+        localizations.metadata["measurer_version"] = "0.1"
+        localizations.metadata["measurements_name"] = [
+            [
+                "x",
+                "y",
+                "z",
+                "x_err_low",
+                "x_err_high",
+                "x_err_span",
+                "y_err_low",
+                "y_err_high",
+                "y_err_span",
+                "z_err_low",
+                "z_err_high",
+                "z_err_span",
+                "tdoa_errors_std",
+            ]
+        ]
 
         # Go through all detections
-        #print('LOCALIZATION')
+        # print('LOCALIZATION')
         for detec_idx, detec in detections.data.iterrows():
 
-            #print( str(detec_idx+1) + '/' + str(len(detections)))
+            # print( str(detec_idx+1) + '/' + str(len(detections)))
 
             # load data from all channels for that detection
-            waveform_stack = tools.stack_waveforms(audio_files, detec, TDOA_max_sec)
+            waveform_stack = tools.stack_waveforms(
+                audio_files, detec, TDOA_max_sec
+            )
 
-            # readjust signal boundaries to only focus on section with most energy 
+            # readjust signal boundaries to only focus on section with most energy
             percentage_max_energy = 90
-            chunk = ecosound.core.tools.tighten_signal_limits_peak(waveform_stack[detection_config['AUDIO']['channel']], percentage_max_energy)
-            waveform_stack = [x[chunk[0]:chunk[1]] for x in waveform_stack]
+            chunk = ecosound.core.tools.tighten_signal_limits_peak(
+                waveform_stack[detection_config["AUDIO"]["channel"]],
+                percentage_max_energy,
+            )
+            waveform_stack = [x[chunk[0] : chunk[1]] for x in waveform_stack]
 
             # calculate TDOAs
-            tdoa_sec, corr_val = calc_tdoa(waveform_stack,
-                                           hydrophone_pairs,
-                                           detec['audio_sampling_frequency'],
-                                           TDOA_max_sec=TDOA_max_sec,
-                                           upsample_res_sec=localization_config['TDOA']['upsample_res_sec'],
-                                           normalize=localization_config['TDOA']['normalize'],
-                                           doplot=False,
-                                           )
+            tdoa_sec, corr_val = calc_tdoa(
+                waveform_stack,
+                hydrophone_pairs,
+                detec["audio_sampling_frequency"],
+                TDOA_max_sec=TDOA_max_sec,
+                upsample_res_sec=localization_config["TDOA"][
+                    "upsample_res_sec"
+                ],
+                normalize=localization_config["TDOA"]["normalize"],
+                doplot=False,
+            )
 
-            valid_tdoas = np.min(corr_val)>localization_config['TDOA']['min_corr_val']
+            valid_tdoas = (
+                np.min(corr_val) > localization_config["TDOA"]["min_corr_val"]
+            )
 
             if valid_tdoas:
                 # Lineralized inversion
-                [m, iterations_logs] = LinearizedInversion.solve(tdoa_sec,
-                                                                 hydrophones_config,
-                                                                 hydrophone_pairs,
-                                                                 localization_config['INVERSION'],
-                                                                 sound_speed_mps,
-                                                                 verbose=verbose,
-                                                                 doplot=False)
+                [m, iterations_logs] = LinearizedInversion.solve(
+                    tdoa_sec,
+                    hydrophones_config,
+                    hydrophone_pairs,
+                    localization_config["INVERSION"],
+                    sound_speed_mps,
+                    verbose=verbose,
+                    doplot=False,
+                )
                 m = np.array([m])
-                
+
                 # Estimate uncertainty
-                tdoa_errors_std = LinearizedInversion.calc_data_error(tdoa_sec,m, sound_speed_mps,hydrophones_config, hydrophone_pairs)
-                loc_errors_std = LinearizedInversion.calc_loc_errors(tdoa_errors_std, m, sound_speed_mps, hydrophones_config, hydrophone_pairs)
-    
+                tdoa_errors_std = LinearizedInversion.calc_data_error(
+                    tdoa_sec,
+                    m,
+                    sound_speed_mps,
+                    hydrophones_config,
+                    hydrophone_pairs,
+                )
+                loc_errors_std = LinearizedInversion.calc_loc_errors(
+                    tdoa_errors_std,
+                    m,
+                    sound_speed_mps,
+                    hydrophones_config,
+                    hydrophone_pairs,
+                )
+
                 # Bring all detection and localization informations together
-                detec.loc['x'] = m[0,0]
-                detec.loc['y'] = m[0,1]
-                detec.loc['z'] = m[0,2]
-                detec.loc['x_err_low'] = detec.loc['x'] - loc_errors_std['x_std'].values[0]
-                detec.loc['x_err_high'] = detec.loc['x'] + loc_errors_std['x_std'].values[0]
-                detec.loc['x_err_span'] = detec.loc['x_err_high'] - detec.loc['x_err_low']
-                detec.loc['y_err_low'] = detec.loc['y'] - loc_errors_std['y_std'].values[0]
-                detec.loc['y_err_high'] = detec.loc['y'] + loc_errors_std['y_std'].values[0]
-                detec.loc['y_err_span'] = detec.loc['y_err_high'] - detec.loc['y_err_low']
-                detec.loc['z_err_low'] = detec.loc['z'] - loc_errors_std['z_std'].values[0]
-                detec.loc['z_err_high'] = detec.loc['z'] + loc_errors_std['z_std'].values[0]
-                detec.loc['z_err_span'] = detec.loc['z_err_high'] - detec.loc['z_err_low'] 
-                detec.loc['tdoa_errors_std'] = tdoa_errors_std[0]
-                detec.loc['iterations_logs'] = iterations_logs
+                detec.loc["x"] = m[0, 0]
+                detec.loc["y"] = m[0, 1]
+                detec.loc["z"] = m[0, 2]
+                detec.loc["x_err_low"] = (
+                    detec.loc["x"] - loc_errors_std["x_std"].values[0]
+                )
+                detec.loc["x_err_high"] = (
+                    detec.loc["x"] + loc_errors_std["x_std"].values[0]
+                )
+                detec.loc["x_err_span"] = (
+                    detec.loc["x_err_high"] - detec.loc["x_err_low"]
+                )
+                detec.loc["y_err_low"] = (
+                    detec.loc["y"] - loc_errors_std["y_std"].values[0]
+                )
+                detec.loc["y_err_high"] = (
+                    detec.loc["y"] + loc_errors_std["y_std"].values[0]
+                )
+                detec.loc["y_err_span"] = (
+                    detec.loc["y_err_high"] - detec.loc["y_err_low"]
+                )
+                detec.loc["z_err_low"] = (
+                    detec.loc["z"] - loc_errors_std["z_std"].values[0]
+                )
+                detec.loc["z_err_high"] = (
+                    detec.loc["z"] + loc_errors_std["z_std"].values[0]
+                )
+                detec.loc["z_err_span"] = (
+                    detec.loc["z_err_high"] - detec.loc["z_err_low"]
+                )
+                detec.loc["tdoa_errors_std"] = tdoa_errors_std[0]
+                detec.loc["iterations_logs"] = iterations_logs
                 detec = detec.to_frame().T
-            else: # detections that couln'd be localized (low xcorr value for tdoa measurements)
-                detec.loc['x'] = np.nan
-                detec.loc['y'] = np.nan
-                detec.loc['z'] = np.nan
-                detec.loc['x_err_low'] = np.nan
-                detec.loc['x_err_high'] = np.nan
-                detec.loc['x_err_span'] = np.nan
-                detec.loc['y_err_low'] = np.nan
-                detec.loc['y_err_high'] = np.nan
-                detec.loc['y_err_span'] = np.nan
-                detec.loc['z_err_low'] = np.nan
-                detec.loc['z_err_high'] = np.nan
-                detec.loc['z_err_span'] = np.nan 
-                detec.loc['tdoa_errors_std'] = np.nan
-                detec.loc['iterations_logs'] = np.nan
+            else:  # detections that couln'd be localized (low xcorr value for tdoa measurements)
+                detec.loc["x"] = np.nan
+                detec.loc["y"] = np.nan
+                detec.loc["z"] = np.nan
+                detec.loc["x_err_low"] = np.nan
+                detec.loc["x_err_high"] = np.nan
+                detec.loc["x_err_span"] = np.nan
+                detec.loc["y_err_low"] = np.nan
+                detec.loc["y_err_high"] = np.nan
+                detec.loc["y_err_span"] = np.nan
+                detec.loc["z_err_low"] = np.nan
+                detec.loc["z_err_high"] = np.nan
+                detec.loc["z_err_span"] = np.nan
+                detec.loc["tdoa_errors_std"] = np.nan
+                detec.loc["iterations_logs"] = np.nan
                 detec = detec.to_frame().T
 
             # stack to results into localization object
             if len(localizations) == 0:
                 localizations.data = detec
             else:
-                localizations.data = pd.concat([localizations.data, detec], axis=0)
-        print('...done')
+                localizations.data = pd.concat(
+                    [localizations.data, detec], axis=0
+                )
+        print("...done")
         return localizations
 
 
-class GridSearch():
-
+class GridSearch:
     @staticmethod
-    def calc_data_error(tdoa_sec, m, sound_speed_mps,hydrophones_config, hydrophone_pairs):
-        """ Calculates tdoa measurement errors. Eq. (9) in Mouy et al. 2018"""
-        tdoa_m = predict_tdoa(m, sound_speed_mps, hydrophones_config, hydrophone_pairs)
+    def calc_data_error(
+        tdoa_sec, m, sound_speed_mps, hydrophones_config, hydrophone_pairs
+    ):
+        """Calculates tdoa measurement errors. Eq. (9) in Mouy et al. 2018"""
+        tdoa_m = predict_tdoa(
+            m, sound_speed_mps, hydrophones_config, hydrophone_pairs
+        )
         Q = len(m)
         M = m.size
         N = len(tdoa_sec)
-        error_std = np.sqrt((1/(Q*(N-M))) * (sum((tdoa_sec-tdoa_m)**2)))
+        error_std = np.sqrt(
+            (1 / (Q * (N - M))) * (sum((tdoa_sec - tdoa_m) ** 2))
+        )
         return error_std
 
     @staticmethod
-    def create_tdoa_grid(x_limits,y_limits,z_limits,spacing, hydrophones_config, ref_channel,sound_speed_mps, outfile):
-        hydrophone_pairs = defineReceiverPairs(len(hydrophones_config), ref_receiver=ref_channel)
-        sources = tools.defineCubeVolumeGrid(x_limits,y_limits,z_limits,spacing)
-        sources_tdoa = np.zeros(shape=(len(hydrophone_pairs),len(sources)))
+    def create_tdoa_grid(
+        x_limits,
+        y_limits,
+        z_limits,
+        spacing,
+        hydrophones_config,
+        ref_channel,
+        sound_speed_mps,
+        outfile,
+    ):
+        hydrophone_pairs = defineReceiverPairs(
+            len(hydrophones_config), ref_receiver=ref_channel
+        )
+        sources = tools.defineCubeVolumeGrid(
+            x_limits, y_limits, z_limits, spacing
+        )
+        sources_tdoa = np.zeros(shape=(len(hydrophone_pairs), len(sources)))
         points_coord = sources.to_numpy()
-        hydrophones_coord = hydrophones_config[['x','y','z']].to_numpy()
-        tdoas = predict_tdoa(points_coord, sound_speed_mps, hydrophones_coord, np.array(hydrophone_pairs))        
-        np.savez(outfile,tdoa=tdoas,grid_coord=sources,x_limits=x_limits,y_limits=y_limits,z_limits=z_limits,spacing=spacing,ref_channel=ref_channel,sound_speed_mps=sound_speed_mps, hydrophones_coord=hydrophones_coord)
-        print('...done')
-        #return sources, sources_tdoa
+        hydrophones_coord = hydrophones_config[["x", "y", "z"]].to_numpy()
+        tdoas = predict_tdoa(
+            points_coord,
+            sound_speed_mps,
+            hydrophones_coord,
+            np.array(hydrophone_pairs),
+        )
+        np.savez(
+            outfile,
+            tdoa=tdoas,
+            grid_coord=sources,
+            x_limits=x_limits,
+            y_limits=y_limits,
+            z_limits=z_limits,
+            spacing=spacing,
+            ref_channel=ref_channel,
+            sound_speed_mps=sound_speed_mps,
+            hydrophones_coord=hydrophones_coord,
+        )
+        # print("...done")
+        # return sources, sources_tdoa
 
     @staticmethod
     def load_tdoa_grid(grid_file):
-       npzfile = np.load(grid_file)
-       tdoa_grid=dict()
-       tdoa_grid['tdoa'] = npzfile['tdoa']
-       tdoa_grid['grid_coord'] = npzfile['grid_coord']
-       tdoa_grid['x_limits'] = npzfile['x_limits']
-       tdoa_grid['y_limits'] = npzfile['y_limits']
-       tdoa_grid['z_limits'] = npzfile['z_limits']
-       tdoa_grid['spacing'] = npzfile['spacing']
-       tdoa_grid['ref_channel'] = npzfile['ref_channel']
-       tdoa_grid['sound_speed_mps'] = npzfile['sound_speed_mps']
-       tdoa_grid['hydrophones_coord'] = npzfile['hydrophones_coord']
-       return tdoa_grid
-    
+        npzfile = np.load(grid_file)
+        tdoa_grid = dict()
+        tdoa_grid["tdoa"] = npzfile["tdoa"]
+        tdoa_grid["grid_coord"] = npzfile["grid_coord"]
+        tdoa_grid["x_limits"] = npzfile["x_limits"]
+        tdoa_grid["y_limits"] = npzfile["y_limits"]
+        tdoa_grid["z_limits"] = npzfile["z_limits"]
+        tdoa_grid["spacing"] = npzfile["spacing"]
+        tdoa_grid["ref_channel"] = npzfile["ref_channel"]
+        tdoa_grid["sound_speed_mps"] = npzfile["sound_speed_mps"]
+        tdoa_grid["hydrophones_coord"] = npzfile["hydrophones_coord"]
+        return tdoa_grid
+
     @staticmethod
-    def calc_credibility_interval(axis, values,start_value,percentage):
+    def calc_credibility_interval(axis, values, start_value, percentage):
         values = values / sum(values)
-        start_index = int(np.where(axis==start_value)[0])
-        IC_low_limit_idx, remainder = find_half_CI_value(values,start_index,percentage/2, -1)
-        IC_high_limit_idx, remainder = find_half_CI_value(values,start_index+1,percentage/2+remainder,1)
-        if remainder>0:
-            IC_low_limit_idx, remainder = find_half_CI_value(values,IC_low_limit_idx,remainder, -1)
-        if sum(values[IC_low_limit_idx:IC_high_limit_idx+1])<percentage:
-            print('Issue while calculating the CI')
+        start_index = int(np.where(axis == start_value)[0])
+        IC_low_limit_idx, remainder = find_half_CI_value(
+            values, start_index, percentage / 2, -1
+        )
+        IC_high_limit_idx, remainder = find_half_CI_value(
+            values, start_index + 1, percentage / 2 + remainder, 1
+        )
+        if remainder > 0:
+            IC_low_limit_idx, remainder = find_half_CI_value(
+                values, IC_low_limit_idx, remainder, -1
+            )
+        if sum(values[IC_low_limit_idx : IC_high_limit_idx + 1]) < percentage:
+            print("Issue while calculating the CI")
         return [axis[IC_low_limit_idx], axis[IC_high_limit_idx]]
-    
+
     @staticmethod
-    def run_localization(audio_files, detections, tdoa_grid, deployment_info, detection_config, hydrophones_config, localization_config, verbose=True):
+    def run_localization(
+        audio_files,
+        detections,
+        tdoa_grid,
+        deployment_info,
+        detection_config,
+        hydrophones_config,
+        localization_config,
+        verbose=True,
+    ):
 
         # localization
-        sound_speed_mps = localization_config['ENVIRONMENT']['sound_speed_mps']
-        ref_channel = localization_config['TDOA']['ref_channel']
+        sound_speed_mps = localization_config["ENVIRONMENT"]["sound_speed_mps"]
+        ref_channel = localization_config["TDOA"]["ref_channel"]
 
         # define search window based on hydrophone separation and sound speed
-        hydrophones_dist_matrix = tools.calc_hydrophones_distances(hydrophones_config)
-        TDOA_max_sec = np.max(hydrophones_dist_matrix)/sound_speed_mps
+        hydrophones_dist_matrix = tools.calc_hydrophones_distances(
+            hydrophones_config
+        )
+        TDOA_max_sec = np.max(hydrophones_dist_matrix) / sound_speed_mps
 
         # define hydrophone pairs
-        hydrophone_pairs = defineReceiverPairs(len(hydrophones_config), ref_receiver=ref_channel)
+        hydrophone_pairs = defineReceiverPairs(
+            len(hydrophones_config), ref_receiver=ref_channel
+        )
 
         # Prepare localization object
         localizations = Measurement()
-        localizations.metadata['measurer_name'] = 'Grid Search'
-        localizations.metadata['measurer_version'] = '0.1'
-        localizations.metadata['measurements_name'] = [['x', 'y', 'z', 'x_err_low','x_err_high','x_err_span','y_err_low','y_err_high','y_err_span','z_err_low','z_err_high','z_err_span','tdoa_errors_std','PPD']]
+        localizations.metadata["measurer_name"] = "Grid Search"
+        localizations.metadata["measurer_version"] = "0.1"
+        localizations.metadata["measurements_name"] = [
+            [
+                "x",
+                "y",
+                "z",
+                "x_err_low",
+                "x_err_high",
+                "x_err_span",
+                "y_err_low",
+                "y_err_high",
+                "y_err_span",
+                "z_err_low",
+                "z_err_high",
+                "z_err_span",
+                "tdoa_errors_std",
+                "PPD",
+            ]
+        ]
 
-        #print('LOCALIZATION')
+        # print('LOCALIZATION')
         # Go through all detections and resolve localization
-        m = np.zeros([len(hydrophone_pairs),len(detections)])
-        tdoa_errors = np.zeros([len(hydrophone_pairs),len(detections)])
+        m = np.zeros([3, len(detections)])
+        tdoa_errors = np.zeros([len(hydrophone_pairs), len(detections)])
         grid_data_misfit = [[]] * len(detections)
-        tdoa_xcorr_vals = np.zeros([len(hydrophone_pairs),len(detections)])
-        PPDs=[[]]*len(detections)
-        for detec_idx, detec in detections.data.iterrows():
+        tdoa_xcorr_vals = np.zeros([len(hydrophone_pairs), len(detections)])
+        PPDs = [[]] * len(detections)
+        for detec_idx, detec in tqdm(
+            detections.data.iterrows(),
+            total=len(detections),
+            desc="progress",
+            leave=True,
+            miniters=1,
+            colour="green",
+        ):
 
-            #print( str(detec_idx+1) + '/' + str(len(detections)))
+            # print( str(detec_idx+1) + '/' + str(len(detections)))
 
             # load data from all channels for that detection
-            waveform_stack = tools.stack_waveforms(audio_files, detec, TDOA_max_sec)
+            waveform_stack = tools.stack_waveforms(
+                audio_files, detec, TDOA_max_sec
+            )
 
-            # readjust signal boundaries to only focus on section with most energy 
+            # readjust signal boundaries to only focus on section with most energy
             percentage_max_energy = 90
-            chunk = ecosound.core.tools.tighten_signal_limits_peak(waveform_stack[detection_config['AUDIO']['channel']], percentage_max_energy)
-            waveform_stack = [x[chunk[0]:chunk[1]] for x in waveform_stack]
+            chunk = ecosound.core.tools.tighten_signal_limits_peak(
+                waveform_stack[detection_config["AUDIO"]["channel"]],
+                percentage_max_energy,
+            )
+            waveform_stack = [x[chunk[0] : chunk[1]] for x in waveform_stack]
 
             # calculate TDOAs
-            tdoa_sec, corr_val = calc_tdoa(waveform_stack,
-                                           hydrophone_pairs,
-                                           detec['audio_sampling_frequency'],
-                                           TDOA_max_sec=TDOA_max_sec,
-                                           upsample_res_sec=localization_config['TDOA']['upsample_res_sec'],
-                                           normalize=localization_config['TDOA']['normalize'],
-                                           doplot=False,
-                                           )
+            tdoa_sec, corr_val = calc_tdoa(
+                waveform_stack,
+                hydrophone_pairs,
+                detec["audio_sampling_frequency"],
+                TDOA_max_sec=TDOA_max_sec,
+                upsample_res_sec=localization_config["TDOA"][
+                    "upsample_res_sec"
+                ],
+                normalize=localization_config["TDOA"]["normalize"],
+                doplot=False,
+            )
 
             # Find grid location minimizing the data misfit
-            delta_tdoa = tdoa_grid['tdoa'] - tdoa_sec
+            delta_tdoa = tdoa_grid["tdoa"] - tdoa_sec
             delta_tdoa_norm = np.linalg.norm(delta_tdoa, axis=0)
             min_idx = np.argmin(delta_tdoa_norm)
 
             # stack up localization results (will be used for estimating data and localization errors later on)
-            m[:,detec_idx] = tdoa_grid['grid_coord'][min_idx].T
-            tdoa_errors[:,detec_idx] = delta_tdoa[:,min_idx] # to estimate std of data errors
+            m[:, detec_idx] = tdoa_grid["grid_coord"][min_idx].T
+            tdoa_errors[:, detec_idx] = delta_tdoa[
+                :, min_idx
+            ]  # to estimate std of data errors
             grid_data_misfit[detec_idx] = delta_tdoa_norm
-            tdoa_xcorr_vals[:,detec_idx] = corr_val.T
+            tdoa_xcorr_vals[:, detec_idx] = corr_val.T
 
         # estimate data errors
-        valid_tdoas = np.min(tdoa_xcorr_vals,axis=0)>localization_config['TDOA']['min_corr_val']
-        tdoa_errors_cleaned = tdoa_errors[:,valid_tdoas] # doesn't take into account localization with low correlation value
-        tdoa_errors_std = np.sqrt(sum(sum(tdoa_errors_cleaned**2))/np.prod(tdoa_errors_cleaned.shape))
+        valid_tdoas = (
+            np.min(tdoa_xcorr_vals, axis=0)
+            > localization_config["TDOA"]["min_corr_val"]
+        )
+        tdoa_errors_cleaned = tdoa_errors[
+            :, valid_tdoas
+        ]  # doesn't take into account localization with low correlation value
+        tdoa_errors_std = np.sqrt(
+            sum(sum(tdoa_errors_cleaned**2))
+            / np.prod(tdoa_errors_cleaned.shape)
+        )
 
         # Estimate localization uncertainty (credibility intervals)
         for detec_idx, detec in detections.data.iterrows():
             if valid_tdoas[detec_idx]:
-                #print(str(detec_idx))
+                # print(str(detec_idx))
                 # unnormalized likelihood
-                L = np.exp(-grid_data_misfit[detec_idx]**2 /(2*(tdoa_errors_std**2)))
+                L = np.exp(
+                    -grid_data_misfit[detec_idx] ** 2
+                    / (2 * (tdoa_errors_std**2))
+                )
                 # normalized PPD
-                PPD = L/sum(L)
+                PPD = L / sum(L)
 
                 # Convert linear array into dataframe then 3D numpy array
-                PPD_df = pd.DataFrame({'x':[],'y':[],'z':[],'PPD':[]})
-                PPD_df[['x','y','z']]=tdoa_grid['grid_coord']
-                PPD_df['PPD']= PPD
-                PPD_df = PPD_df.set_index(['x','y','z'])
+                PPD_df = pd.DataFrame({"x": [], "y": [], "z": [], "PPD": []})
+                PPD_df[["x", "y", "z"]] = tdoa_grid["grid_coord"]
+                PPD_df["PPD"] = PPD
+                PPD_df = PPD_df.set_index(["x", "y", "z"])
                 PPD_xr = PPD_df.to_xarray()
 
-                #calculate 2D marginals
-                Pxy = PPD_xr.PPD.sum("z")
-                Pxz = PPD_xr.PPD.sum("y")
-                Pyz = PPD_xr.PPD.sum("x")
+                # calculate 2D marginals
+                # Pxy = PPD_xr.PPD.sum("z")
+                # Pxz = PPD_xr.PPD.sum("y")
+                # Pyz = PPD_xr.PPD.sum("x")
 
-                #calculate 1D marginals
+                # calculate 1D marginals
                 Px = PPD_xr.PPD.sum("z").sum("y")
                 Py = PPD_xr.PPD.sum("x").sum("z")
                 Pz = PPD_xr.PPD.sum("x").sum("y")
-                
-                #calculate credibility intervals from 1D marginals
-                percentage = 0.68 # % for CI
-                Px_CI = GridSearch.calc_credibility_interval(Px['x'].values, Px.to_numpy(),m[0,detec_idx],percentage)
-                Py_CI = GridSearch.calc_credibility_interval(Py['y'].values, Py.to_numpy(),m[1,detec_idx],percentage)    
-                Pz_CI = GridSearch.calc_credibility_interval(Pz['z'].values, Pz.to_numpy(),m[2,detec_idx],percentage)    
+
+                # calculate credibility intervals from 1D marginals
+                percentage = 0.68  # % for CI
+                Px_CI = GridSearch.calc_credibility_interval(
+                    Px["x"].values, Px.to_numpy(), m[0, detec_idx], percentage
+                )
+                Py_CI = GridSearch.calc_credibility_interval(
+                    Py["y"].values, Py.to_numpy(), m[1, detec_idx], percentage
+                )
+                Pz_CI = GridSearch.calc_credibility_interval(
+                    Pz["z"].values, Pz.to_numpy(), m[2, detec_idx], percentage
+                )
 
                 # Bring all detection and localization informations together
-                detec.loc['x'] = m[0,detec_idx]
-                detec.loc['y'] = m[1,detec_idx]
-                detec.loc['z'] = m[2,detec_idx]
-                detec.loc['x_err_low'] = Px_CI[0]
-                detec.loc['x_err_high'] = Px_CI[1]
-                detec.loc['x_err_span'] = detec.loc['x_err_high'] - detec.loc['x_err_low']
-                detec.loc['y_err_low'] = Py_CI[0]
-                detec.loc['y_err_high'] = Py_CI[1]
-                detec.loc['y_err_span'] = detec.loc['y_err_high'] - detec.loc['y_err_low']
-                detec.loc['z_err_low'] = Pz_CI[0]
-                detec.loc['z_err_high'] = Pz_CI[1]
-                detec.loc['z_err_span'] = detec.loc['z_err_high'] - detec.loc['z_err_low'] 
-                detec.loc['tdoa_errors_std'] = tdoa_errors_std
-                #detec.loc['PPD'] = PPD_xr
+                detec.loc["x"] = m[0, detec_idx]
+                detec.loc["y"] = m[1, detec_idx]
+                detec.loc["z"] = m[2, detec_idx]
+                detec.loc["x_err_low"] = Px_CI[0]
+                detec.loc["x_err_high"] = Px_CI[1]
+                detec.loc["x_err_span"] = (
+                    detec.loc["x_err_high"] - detec.loc["x_err_low"]
+                )
+                detec.loc["y_err_low"] = Py_CI[0]
+                detec.loc["y_err_high"] = Py_CI[1]
+                detec.loc["y_err_span"] = (
+                    detec.loc["y_err_high"] - detec.loc["y_err_low"]
+                )
+                detec.loc["z_err_low"] = Pz_CI[0]
+                detec.loc["z_err_high"] = Pz_CI[1]
+                detec.loc["z_err_span"] = (
+                    detec.loc["z_err_high"] - detec.loc["z_err_low"]
+                )
+                detec.loc["tdoa_errors_std"] = tdoa_errors_std
+                # detec.loc['PPD'] = PPD_xr
                 detec = detec.to_frame().T
                 # save PPDs
-                PPDs[detec_idx]=PPD_xr
-            else: # detections that couln'd be localized (low xcorr value for tdoa measurements)
-                detec.loc['x'] = np.nan
-                detec.loc['y'] = np.nan
-                detec.loc['z'] = np.nan
-                detec.loc['x_err_low'] = np.nan
-                detec.loc['x_err_high'] = np.nan
-                detec.loc['x_err_span'] = np.nan
-                detec.loc['y_err_low'] = np.nan
-                detec.loc['y_err_high'] = np.nan
-                detec.loc['y_err_span'] = np.nan
-                detec.loc['z_err_low'] = np.nan
-                detec.loc['z_err_high'] = np.nan
-                detec.loc['z_err_span'] = np.nan 
-                detec.loc['tdoa_errors_std'] = np.nan
-                #detec.loc['PPD'] = np.nan
+                PPDs[detec_idx] = PPD_xr
+            else:  # detections that couln'd be localized (low xcorr value for tdoa measurements)
+                detec.loc["x"] = np.nan
+                detec.loc["y"] = np.nan
+                detec.loc["z"] = np.nan
+                detec.loc["x_err_low"] = np.nan
+                detec.loc["x_err_high"] = np.nan
+                detec.loc["x_err_span"] = np.nan
+                detec.loc["y_err_low"] = np.nan
+                detec.loc["y_err_high"] = np.nan
+                detec.loc["y_err_span"] = np.nan
+                detec.loc["z_err_low"] = np.nan
+                detec.loc["z_err_high"] = np.nan
+                detec.loc["z_err_span"] = np.nan
+                detec.loc["tdoa_errors_std"] = np.nan
+                # detec.loc['PPD'] = np.nan
                 detec = detec.to_frame().T
-    
+
             # stack to results into localization object
             if len(localizations) == 0:
                 localizations.data = detec
             else:
-                localizations.data = pd.concat([localizations.data, detec], axis=0)
-        print('...done')
-    
+                localizations.data = pd.concat(
+                    [localizations.data, detec], axis=0
+                )
+        # print("...done")
+
         return localizations, PPDs
 
-def defineReceiverPairs (n_receivers, ref_receiver=0):
+
+def defineReceiverPairs(n_receivers, ref_receiver=0):
     Rpairs = []
     for i in range(n_receivers):
         if i != ref_receiver:
             pair = [ref_receiver, i]
             Rpairs.append(pair)
     return Rpairs
-    
+
+
 def predict_tdoa_old(m, V, hydrophones_coords, hydrophone_pairs):
-    """ Create data from the forward problem.
-        Generate TDOAs based on location of hydrophones and source.
+    """Create data from the forward problem.
+    Generate TDOAs based on location of hydrophones and source.
     """
     N = len(hydrophone_pairs)
-    dt = np.full([N,1], np.nan)
+    dt = np.full([N, 1], np.nan)
     for idx, hydrophone_pair in enumerate(hydrophone_pairs):
-        p1=hydrophone_pair[0]
-        p2=hydrophone_pair[1]
-        t1=((1/V)*np.sqrt( ((m.x-hydrophones_coords.x[p1])**2)+((m.y-hydrophones_coords.y[p1])**2)+((m.z-hydrophones_coords.z[p1])**2)) )
-        t2=((1/V)*np.sqrt(((m.x-hydrophones_coords.x[p2])**2)+((m.y-hydrophones_coords.y[p2])**2)+((m.z-hydrophones_coords.z[p2])**2)))
-        dt[idx] = np.array(t2-t1) # noiseless data
+        p1 = hydrophone_pair[0]
+        p2 = hydrophone_pair[1]
+        t1 = (1 / V) * np.sqrt(
+            ((m.x - hydrophones_coords.x[p1]) ** 2)
+            + ((m.y - hydrophones_coords.y[p1]) ** 2)
+            + ((m.z - hydrophones_coords.z[p1]) ** 2)
+        )
+        t2 = (1 / V) * np.sqrt(
+            ((m.x - hydrophones_coords.x[p2]) ** 2)
+            + ((m.y - hydrophones_coords.y[p2]) ** 2)
+            + ((m.z - hydrophones_coords.z[p2]) ** 2)
+        )
+        dt[idx] = np.array(t2 - t1)  # noiseless data
     return dt
+
 
 @njit(parallel=False)
 def predict_tdoa(m, V, hydrophones_coords, hydrophones_pairs):
-    """ Create data from the forward problem.
-        Generate TDOAs based on location of hydrophones and source.
+    """Create data from the forward problem.
+    Generate TDOAs based on location of hydrophones and source.
     """
     N = hydrophones_pairs.shape[0]
     n_sources = m.shape[0]
-    dt = np.zeros((N,n_sources),dtype=np.float64)
+    dt = np.zeros((N, n_sources), dtype=np.float64)
     for m_idx in prange(n_sources):
         for pair_idx in prange(N):
-            p1=hydrophones_pairs[pair_idx, 0]
-            p2=hydrophones_pairs[pair_idx, 1]
-            t1=((1/V)*np.sqrt( ((m[m_idx,0]-hydrophones_coords[p1,0])**2)+((m[m_idx,1]-hydrophones_coords[p1,1])**2)+((m[m_idx,2]-hydrophones_coords[p1,2])**2)) )
-            t2=((1/V)*np.sqrt(((m[m_idx,0]-hydrophones_coords[p2,0])**2)+((m[m_idx,1]-hydrophones_coords[p2,1])**2)+((m[m_idx,2]-hydrophones_coords[p2,2])**2)))
-            dt[pair_idx, m_idx] = t2-t1 # noiseless data
+            p1 = hydrophones_pairs[pair_idx, 0]
+            p2 = hydrophones_pairs[pair_idx, 1]
+            t1 = (1 / V) * np.sqrt(
+                ((m[m_idx, 0] - hydrophones_coords[p1, 0]) ** 2)
+                + ((m[m_idx, 1] - hydrophones_coords[p1, 1]) ** 2)
+                + ((m[m_idx, 2] - hydrophones_coords[p1, 2]) ** 2)
+            )
+            t2 = (1 / V) * np.sqrt(
+                ((m[m_idx, 0] - hydrophones_coords[p2, 0]) ** 2)
+                + ((m[m_idx, 1] - hydrophones_coords[p2, 1]) ** 2)
+                + ((m[m_idx, 2] - hydrophones_coords[p2, 2]) ** 2)
+            )
+            dt[pair_idx, m_idx] = t2 - t1  # noiseless data
     return dt
 
-def calc_tdoa(waveform_stack, hydrophone_pairs, sampling_frequency, TDOA_max_sec=None, upsample_res_sec=None, normalize=False, hydrophones_name=None, doplot=False):
+
+def calc_tdoa(
+    waveform_stack,
+    hydrophone_pairs,
+    sampling_frequency,
+    TDOA_max_sec=None,
+    upsample_res_sec=None,
+    normalize=False,
+    hydrophones_name=None,
+    doplot=False,
+):
     """
     TDOA measurements
 
@@ -666,22 +998,25 @@ def calc_tdoa(waveform_stack, hydrophone_pairs, sampling_frequency, TDOA_max_sec
     tdoa_corr = []
     # Upsampling
     if upsample_res_sec:
-        if upsample_res_sec < (1/sampling_frequency):
+        if upsample_res_sec < (1 / sampling_frequency):
             for chan_id, waveform in enumerate(waveform_stack):
                 waveform_stack[chan_id], new_sampling_frequency = upsample(
-                    waveform, 1/sampling_frequency, upsample_res_sec)
+                    waveform, 1 / sampling_frequency, upsample_res_sec
+                )
             sampling_frequency = new_sampling_frequency
         else:
-            print('Warning: upsampling not applied because the requested time'
-                  ' resolution (upsample_res_sec) is larger than the current'
-                  ' time resolution of the signal.')
+            print(
+                "Warning: upsampling not applied because the requested time"
+                " resolution (upsample_res_sec) is larger than the current"
+                " time resolution of the signal."
+            )
     # Normalize max amplitude to 1
     if normalize:
         for chan_id, waveform in enumerate(waveform_stack):
-                    waveform_stack[chan_id] = waveform / np.max(waveform)
+            waveform_stack[chan_id] = waveform / np.max(waveform)
     # Constrains to a max TDOA (based on array geometry)
     if TDOA_max_sec:
-        TDOA_max_samp = int(np.round(TDOA_max_sec*sampling_frequency))
+        TDOA_max_samp = int(np.round(TDOA_max_sec * sampling_frequency))
 
     # cross correlation
     for hydrophone_pair in hydrophone_pairs:
@@ -689,141 +1024,163 @@ def calc_tdoa(waveform_stack, hydrophone_pairs, sampling_frequency, TDOA_max_sec
         s1 = waveform_stack[hydrophone_pair[0]]
         s2 = waveform_stack[hydrophone_pair[1]]
         # cross correlation
-        corr = scipy.signal.correlate(s2,s1, mode='full', method='auto')
-        corr = corr/(np.linalg.norm(s1)*np.linalg.norm(s2))
-        lag_array = scipy.signal.correlation_lags(s2.size,s1.size, mode="full")
+        corr = scipy.signal.correlate(s2, s1, mode="full", method="auto")
+        corr = corr / (np.linalg.norm(s1) * np.linalg.norm(s2))
+        lag_array = scipy.signal.correlation_lags(
+            s2.size, s1.size, mode="full"
+        )
         # Identify correlation peak within the TDOA search window (SW)
         if TDOA_max_sec:
-            SW_start_idx = np.where(lag_array == -TDOA_max_samp)[0][0] # search window start idx
-            SW_stop_idx = np.where(lag_array == TDOA_max_samp)[0][0] # search window stop idx
+            SW_start_idx = np.where(lag_array == -TDOA_max_samp)[0][
+                0
+            ]  # search window start idx
+            SW_stop_idx = np.where(lag_array == TDOA_max_samp)[0][
+                0
+            ]  # search window stop idx
         else:
-            SW_start_idx=0
-            SW_stop_idx=len(corr)-1
-        corr_max_idx = np.argmax(corr[SW_start_idx:SW_stop_idx]) + SW_start_idx # idx of max corr value
+            SW_start_idx = 0
+            SW_stop_idx = len(corr) - 1
+        corr_max_idx = (
+            np.argmax(corr[SW_start_idx:SW_stop_idx]) + SW_start_idx
+        )  # idx of max corr value
         delay = lag_array[corr_max_idx]
         corr_value = corr[corr_max_idx]
-        tdoa_sec.append(delay/sampling_frequency)
+        tdoa_sec.append(delay / sampling_frequency)
         tdoa_corr.append(corr_value)
 
         if doplot:
             fig, ax = plt.subplots(nrows=2, sharex=False)
             if hydrophones_name:
-                label1= hydrophones_name[hydrophone_pair[0]] + ' (ref)'
-                label2= hydrophones_name[hydrophone_pair[1]]
+                label1 = hydrophones_name[hydrophone_pair[0]] + " (ref)"
+                label2 = hydrophones_name[hydrophone_pair[1]]
             else:
-                 label1 = 'Hydrophone ' + str(hydrophone_pair[0]) + ' (ref)'
-                 label2 = 'Hydrophone ' + str(hydrophone_pair[1])
-            ax[0].plot(s1, color='red', label=label1)
-            ax[0].plot(s2, color='black',label=label2)
-            ax[0].set_xlabel('Time (sample)')
-            ax[0].set_ylabel('Amplitude')
+                label1 = "Hydrophone " + str(hydrophone_pair[0]) + " (ref)"
+                label2 = "Hydrophone " + str(hydrophone_pair[1])
+            ax[0].plot(s1, color="red", label=label1)
+            ax[0].plot(s2, color="black", label=label2)
+            ax[0].set_xlabel("Time (sample)")
+            ax[0].set_ylabel("Amplitude")
             ax[0].legend()
             ax[0].grid()
-            ax[0].set_title('TDOA: ' + str(delay) + ' samples')
+            ax[0].set_title("TDOA: " + str(delay) + " samples")
             ax[1].plot(lag_array, corr)
-            ax[1].plot(delay, corr_value ,marker = '.', color='r', label='TDOA')
+            ax[1].plot(delay, corr_value, marker=".", color="r", label="TDOA")
             if TDOA_max_sec:
-                width = 2*TDOA_max_samp
+                width = 2 * TDOA_max_samp
                 height = 2
-                rect = plt.Rectangle((-TDOA_max_samp, -1), width, height,
-                                             linewidth=1,
-                                             edgecolor='green',
-                                             facecolor='green',
-                                             alpha=0.3,
-                                             label='Search window')
+                rect = plt.Rectangle(
+                    (-TDOA_max_samp, -1),
+                    width,
+                    height,
+                    linewidth=1,
+                    edgecolor="green",
+                    facecolor="green",
+                    alpha=0.3,
+                    label="Search window",
+                )
                 ax[1].add_patch(rect)
-            ax[1].set_xlabel('Lag (sample)')
-            ax[1].set_ylabel('Correlation')
-            ax[1].set_title('Correlation: ' + str(corr_value))
-            ax[1].set_ylim(-1,1)
+            ax[1].set_xlabel("Lag (sample)")
+            ax[1].set_ylabel("Correlation")
+            ax[1].set_title("Correlation: " + str(corr_value))
+            ax[1].set_ylim(-1, 1)
             ax[1].grid()
             ax[1].legend()
             plt.tight_layout()
     return np.array([tdoa_sec]).transpose(), np.array([tdoa_corr]).transpose()
 
+
 def plot_localizations3D(localizations=None, hydrophones=None):
 
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
 
     if hydrophones is not None:
-        ax.scatter3D(hydrophones['x'],
-                     hydrophones['y'],
-                     hydrophones['z'],
-                     s=20,
-                     color='gainsboro',
-                     edgecolors='dimgray',
-                     label=hydrophones['name'],
-                     alpha=1,
-                     zorder=3)
+        ax.scatter3D(
+            hydrophones["x"],
+            hydrophones["y"],
+            hydrophones["z"],
+            s=20,
+            color="gainsboro",
+            edgecolors="dimgray",
+            label=hydrophones["name"],
+            alpha=1,
+            zorder=3,
+        )
 
     if localizations is not None:
         loc_data = localizations.data
-        ax.scatter3D(loc_data['x'],
-                     loc_data['y'],
-                     loc_data['z'],
-                     c='blue',
-                     #marker=params['loc_marker'].values[0],
-                     alpha=1,
-                     #s=2
-                     )
-        #plot uncertainties
+        ax.scatter3D(
+            loc_data["x"],
+            loc_data["y"],
+            loc_data["z"],
+            c="blue",
+            # marker=params['loc_marker'].values[0],
+            alpha=1,
+            # s=2
+        )
+        # plot uncertainties
         for idx, loc_point in loc_data.iterrows():
-            lw=1
-            c ='red'
-            alph=1
-            ax.plot3D([loc_point['x_err_low'],loc_point['x_err_high']],
-                      [loc_point['y'],loc_point['y']],
-                      [loc_point['z'],loc_point['z']],
-                      linewidth=lw,
-                      #linestyle='-',
-                      color=c,
-                      alpha=alph,
-                      )
-            ax.plot3D([loc_point['x'],loc_point['x']],
-                      [loc_point['y_err_low'],loc_point['y_err_high']],
-                      [loc_point['z'],loc_point['z']],
-                      linewidth=lw,
-                      #linestyle='-',
-                      color=c,
-                      alpha=alph,
-                      )
-            ax.plot3D([loc_point['x'],loc_point['x']],
-                      [loc_point['y'],loc_point['y']],
-                      [loc_point['z_err_low'],loc_point['z_err_high']],
-                      linewidth=lw,
-                      #linestyle='-',
-                      color=c,
-                      alpha=alph,
-                      )
-    ax.set_xlabel('X (m)')
-    ax.set_ylabel('Y (m)')
-    ax.set_zlabel('Z (m)')
-    ax.set_box_aspect([1,1,1])
+            lw = 1
+            c = "red"
+            alph = 1
+            ax.plot3D(
+                [loc_point["x_err_low"], loc_point["x_err_high"]],
+                [loc_point["y"], loc_point["y"]],
+                [loc_point["z"], loc_point["z"]],
+                linewidth=lw,
+                # linestyle='-',
+                color=c,
+                alpha=alph,
+            )
+            ax.plot3D(
+                [loc_point["x"], loc_point["x"]],
+                [loc_point["y_err_low"], loc_point["y_err_high"]],
+                [loc_point["z"], loc_point["z"]],
+                linewidth=lw,
+                # linestyle='-',
+                color=c,
+                alpha=alph,
+            )
+            ax.plot3D(
+                [loc_point["x"], loc_point["x"]],
+                [loc_point["y"], loc_point["y"]],
+                [loc_point["z_err_low"], loc_point["z_err_high"]],
+                linewidth=lw,
+                # linestyle='-',
+                color=c,
+                alpha=alph,
+            )
+    ax.set_xlabel("X (m)")
+    ax.set_ylabel("Y (m)")
+    ax.set_zlabel("Z (m)")
+    ax.set_box_aspect([1, 1, 1])
     fig.tight_layout()
     return fig, ax
-    
-    
-def find_half_CI_value(values,start_index,stop_val, step):
-    
-    
+
+
+def find_half_CI_value(values, start_index, stop_val, step):
+
     # Regarding the credibility intervals, don't change them for your thesis,
-    # but another way to do them (probably better than what I suggested 
-    #yesterday) is "centred" CIs which are centred in each dimension on the MAP
-    #estimate. For asymmetric PPDs these aren't necessarily truly centred but 
-    #can be cut off in one direction if it runs out of probability (and extend 
-    #farther in other direction). I've attached a matlab code (update of earlier
-    #code) that has an option of computing these, which you can look at when you
-    #have time (not now).
-    
-    min_current_value = 0.001*max(values)
+    # but another way to do them (probably better than what I suggested
+    # yesterday) is "centred" CIs which are centred in each dimension on the MAP
+    # estimate. For asymmetric PPDs these aren't necessarily truly centred but
+    # can be cut off in one direction if it runs out of probability (and extend
+    # farther in other direction). I've attached a matlab code (update of earlier
+    # code) that has an option of computing these, which you can look at when you
+    # have time (not now).
+
+    min_current_value = 0.001 * max(values)
     current_idx = start_index
     current_sum = 0
-    max_idx = len(values)-1
-    while (current_sum < stop_val) & (current_idx>=0) & (current_idx<=max_idx):
-        current_sum += values[current_idx]        
+    max_idx = len(values) - 1
+    while (
+        (current_sum < stop_val)
+        & (current_idx >= 0)
+        & (current_idx <= max_idx)
+    ):
+        current_sum += values[current_idx]
         if values[current_idx] < min_current_value:
             break
         current_idx += step
-    remainder = stop_val-current_sum
-    return current_idx-step, remainder
+    remainder = stop_val - current_sum
+    return current_idx - step, remainder
