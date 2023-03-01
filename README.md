@@ -1,5 +1,8 @@
 # Identification of fish sounds in the wild using a set of portable audio-video arrays
 
+This repository contains the necessary information to assemble, operate, deploy, and process data from three eXperimental Audio-Video (XAV) arrays used for identifying fish sounds in the wild. 
+
+
 ## Authors
 Xavier Mouy (1,2), Morgan Black (3), Kieran Cox (3), Jessica Qualley (3),Stan Dosso (1), and Francis Juanes (3)
 
@@ -32,15 +35,15 @@ Acoustic localization is performed using either linearized inversion or fully no
 
 * **Linearized inversion**:
     * Jupyter Notebook: [here](https://github.com/xaviermouy/XAV-arrays/blob/main/localization/Localization_linearized_inversion.ipynb)
-    * GoogleColab Notebook: -> working on it...
-
+    * GoogleColab Notebook: in the works
+	
 * **Fully non-linear inversion**:
     * Jupyter Notebook: [here](https://github.com/xaviermouy/XAV-arrays/blob/main/localization/Localization_non-linear_inversion.ipynb)
-    * GoogleColab Notebook: -> working on it...
+    * GoogleColab Notebook: in the works.
 
 ## Simulated annealing for optimizing hydrophones placement
 
 * Jupyter Notebook: -> not done yet
-* GoogleColab Notebook: -> working on it...
+* GoogleColab Notebook: in the works
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/bJMbtHWPlEg/0.jpg)](http://www.youtube.com/watch?v=bJMbtHWPlEg)
