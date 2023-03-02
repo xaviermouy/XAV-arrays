@@ -1,6 +1,6 @@
 # Identification of fish sounds in the wild using a set of portable audio-video arrays
 
-This repository is accompanying our paper in Methods in Ecology and Evolution. It contains all the necessary information to assemble, operate, deploy, and process data from three eXperimental Audio-Video (XAV) arrays used for identifying fish sounds in the wild. It also include code to optimized teh hydrophone placement using simulated annealing.
+This repository is accompanying our paper in Methods in Ecology and Evolution. It contains all the necessary information to assemble, operate, deploy, and process data from three eXperimental Audio-Video (XAV) arrays used for identifying fish sounds in the wild. It also include code to optimize the hydrophone placement using simulated annealing.
 
 ## Authors
 Xavier Mouy (1,2), Morgan Black (3), Kieran Cox (3), Jessica Qualley (3),Stan Dosso (1), and Francis Juanes (3)
