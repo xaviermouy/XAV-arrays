@@ -14,6 +14,8 @@ import os
 from ecosound.core.audiotools import upsample
 import scipy.signal
 from numba import njit
+from localization import LinearizedInversion
+import copy
 
 
 def getReceiverBoundsWidth(ReceiverBounds):
@@ -32,7 +34,7 @@ def initializeReceivers(nReceivers, ReceiverBounds):
             R1[dim][r] = np.random.rand(1)[0] * ReceiverBoundsWidth.iloc[r][
                 dim
             ] + min(ReceiverBounds.iloc[r][dim])
-    Receivers = pd.DataFrame({"x": R1[0], "y": R1[1], "z": R1[2]})
+    Receivers = np.array([R1[0],R1[1],R1[2]]).T
     return Receivers
 
 
@@ -68,20 +70,15 @@ def perturbReceivers(
     ) * np.random.normal(
         loc=0
     )  # Gaussian distributed perturbation
-    # nu = np.random.random()
-    # gamma = PerturbSTD*(T/T0)*np.tan(np.pi*(nu-0.5))
-    # bandwidth = ReceiverBoundsWidth.iloc[rid][dimid]
-    # perturb = gamma*bandwidth
-    newparam = R.iloc[rid][dimid] + perturb
-    # print(perturb)
+    newparam = R[rid][dimid] + perturb # NEW
     # Checks that perturbed parameter lies within the bounds
     isinbound = (newparam >= min(ReceiverBounds.iloc[rid][dimid])) & (
         newparam <= max(ReceiverBounds.iloc[rid][dimid])
     )
     # updates receiver parameter (only if new paramater fall within parameter bounds)
-    R_prime = pd.DataFrame.copy(R)
+    R_prime = copy.copy(R)  # NEW
     if isinbound == True:
-        R_prime.iloc[rid][dimid] = newparam
+        R_prime[rid][dimid] = newparam # NEW
     return R_prime, isinbound, PerturbParamIdx
 
 
@@ -105,26 +102,19 @@ def optimizeArray(
     while (
         LoopStopFlag == 0
     ):  # Temperature loop. Keeps iterating until acceptance rate is too low
-        # for nnn in range(1):
         # First iteration
         if Tidx == 0:
             R = initializeReceivers(
                 nReceivers, ReceiverBounds
             )  # random initialization of receivers locations (whithin the bounds)
-            E_m = getCost(
+            E_m = LinearizedInversion.getCost(
                 R, S, Rpairs, V, NoiseVariance
             )  # Calculates max RMS uncertainty
             T = AnnealingSchedule["Start"]  # initial temperature
             tmp1 = pd.DataFrame({"T": [T], "cost": [E_m]})
-            Cost = pd.DataFrame.append(Cost, tmp1, ignore_index=True)
-            # Rchanges = R.as_matrix()                                         # Keeps track of model paraneters at each iteration
-            Rchanges = (
-                R.to_numpy()
-            )  # Keeps track of model paraneters at each iteration
-            MappedParamsIdx = getParamsLinearMapping(
-                R
-            )  # linear list of each elements to optimize (for the perturnation phase)
-            # plotArrayUncertainties(R, S, Uncertainties)
+            Cost = pd.concat([Cost, tmp1], ignore_index=True) # NEW
+            Rchanges = (R)  # Keeps track of model paraneters at each iteration
+            MappedParamsIdx = getParamsLinearMapping(R)  # linear list of each elements to optimize (for the perturnation phase)
 
         # Checks that starting temperature is not set to low
         if Tidx == 1:
@@ -159,7 +149,7 @@ def optimizeArray(
             # Acceptance tests
             acceptedFlag = []
             if isinbound:
-                E_mprime = getCost(
+                E_mprime = LinearizedInversion.getCost(
                     R_prime, S, Rpairs, V, NoiseVariance
                 )  # Calculates max RMS uncertainty
                 deltaE = E_mprime - E_m
@@ -178,13 +168,10 @@ def optimizeArray(
             if acceptedFlag:  # accepted change
                 nAccepted += 1
                 # update paramters
-                R = pd.DataFrame.copy(R_prime)
+                R = copy.copy(R_prime) # NEW
                 E_m = E_mprime
                 del R_prime, E_mprime  # delete variables
-                # saves cost and model parameters
-                # tmp1 = pd.DataFrame({'T': [T], 'cost': [E_m]})
-                # Cost = pd.DataFrame.append(Cost, tmp1, ignore_index=True)
-                # Rchanges = np.dstack((Rchanges, R.as_matrix()))
+
             elif acceptedFlag is not False:  # sanity check
                 raise ValueError(
                     [
@@ -193,14 +180,13 @@ def optimizeArray(
                 )
             # saves cost and model parameters
             tmp1 = pd.DataFrame({"T": [T], "cost": [E_m]})
-            Cost = pd.DataFrame.append(Cost, tmp1, ignore_index=True)
-            # Rchanges = np.dstack((Rchanges, R.as_matrix()))
-            Rchanges = np.dstack((Rchanges, R.to_numpy()))
+            Cost = pd.concat([Cost, tmp1], ignore_index=True) # NEW
+            Rchanges = np.dstack((Rchanges, R)) # New
 
         # Calculates acceptance rate for that temperature value
         acceptRate = nAccepted / AnnealingSchedule["nPerturb"]
         tmp2 = pd.DataFrame({"T": [T], "acceptRate": [acceptRate]})
-        acceptRateChanges = acceptRateChanges.append(tmp2, ignore_index=True)
+        acceptRateChanges = pd.concat([acceptRateChanges,tmp2], ignore_index=True) # NEW
         print(
             "Temperature: %.3f - Acceptance rate: %.2f - Cost: %.2f"
             % (T, acceptRate, E_m)
@@ -223,23 +209,23 @@ def optimizeArray(
     return R, Rchanges, acceptRateChanges, Cost, elapsedTime
 
 
-def plotOptimizationResults(
-    outdir, nReceivers, Rchanges, Cost, acceptRateChanges, R, iteridx=1
-):
+def plotOptimizationResults_coords(
+    outdir, nReceivers, Rchanges, iteridx=0):
 
     # plot Parameters evolution with Temperature
-    f1 = plt.figure(1)
+    f1, ax = plt.subplots(nReceivers,1)
     for Ridx in range(nReceivers):
-        plt.subplot(nReceivers, 1, Ridx + 1)
-        plt.plot(Rchanges[Ridx, 0, :], label="X(m)", color="black")
-        plt.plot(Rchanges[Ridx, 1, :], label="Y(m)", color="red")
-        plt.plot(Rchanges[Ridx, 2, :], label="Z(m)", color="green")
-        plt.grid(True)
-        plt.ylabel("H" + str(Ridx + 1))
+        ax[Ridx].plot(Rchanges[Ridx, 0, :], label="X", color="black")
+        ax[Ridx].plot(Rchanges[Ridx, 1, :], label="Y", color="red")
+        ax[Ridx].plot(Rchanges[Ridx, 2, :], label="Z", color="green")
+        ax[Ridx].grid(True)
+        ax[Ridx].set_ylabel("Hp-" + str(Ridx + 1))
         if Ridx == nReceivers - 1:
-            plt.xlabel("Temperature step")
-        # if Ridx == 0:
-        #    plt.legend(loc="best", labels=['X(m)','Y(m)','Z(m)'], bbox_to_anchor=(0.5,-0.1))
+            ax[Ridx].set_xlabel("Temperature step")
+        if Ridx == 0:
+            ax[Ridx].legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, 1.7))
+
+    f1.text(0, 0.5, 'Hydrophone coordinates (m)', rotation=90, va='center')
     f1.savefig(
         os.path.join(
             outdir,
@@ -250,13 +236,21 @@ def plotOptimizationResults(
         ),
         bbox_inches="tight",
     )
+    return f1
 
+  
+def plotOptimizationResults_cost(
+    outdir, Cost, iteridx=0
+):
+
+   
     # plot cost evolution with Temperature
-    f2 = plt.figure(2)
-    plt.plot(Cost["cost"], color="black")
-    plt.grid(True)
-    plt.xlabel("Temperature step")
-    plt.ylabel("Cost")
+    #f2 = plt.figure()
+    f2, ax = plt.subplots(1,1)
+    ax.plot(Cost["cost"], color="black")
+    ax.grid(True)
+    ax.set_xlabel("Temperature step")
+    ax.set_ylabel("Cost")
     f2.savefig(
         os.path.join(
             outdir,
@@ -264,9 +258,14 @@ def plotOptimizationResults(
         ),
         bbox_inches="tight",
     )
+    return f2
+
+def plotOptimizationResults_accRate(
+    outdir, acceptRateChanges, iteridx=0
+):
 
     # plot acceptance rate with Temperature
-    f3 = plt.figure(3)
+    f3 = plt.figure()
     plt.semilogx(
         acceptRateChanges["T"], acceptRateChanges["acceptRate"], color="black"
     )
@@ -284,12 +283,19 @@ def plotOptimizationResults(
         ),
         bbox_inches="tight",
     )
+    return f3
+
+
+def plotOptimizationResults_finalPos(
+    outdir, R, iteridx=0
+):
+
 
     # plot Final receivers positions
-    f4 = plt.figure(4)
+    f4 = plt.figure()
     ax1 = f4.add_subplot(111, projection="3d")
     # Receivers
-    ax1.scatter(R["x"], R["y"], R["z"], s=30, c="black")
+    ax1.scatter(R[:,0], R[:,1], R[:,2], s=30, c="black")
     # Axes labels
     ax1.set_xlabel("X (m)", labelpad=10)
     ax1.set_ylabel("Y (m)", labelpad=10)
@@ -305,3 +311,4 @@ def plotOptimizationResults(
         ),
         bbox_inches="tight",
     )
+    return f4
