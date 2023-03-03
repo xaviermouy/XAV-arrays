@@ -21,10 +21,12 @@ Xavier Mouy (1,2), Morgan Black (3), Kieran Cox (3), Jessica Qualley (3),Stan Do
 Building instructions and suggested deployment procedures can be found in the Supplementary Information of the paper. Deployment log sheets and and check lists can be found in the logsheets folder [here](https://github.com/xaviermouy/XAV-arrays/tree/main/logsheets/).
 
 ## Sample data
-Two small sets of acoustic data from the large and mobile arrays are provided in this repository and used to show how the acoustic localization works (see section below). All the acoustic data used in the paper can be found on the OSF data repository of the paper.
+Two small subsets of acoustic data from the large and mobile arrays are provided in this repository and used to demonstrate how the acoustic localization works (see section below). 
 
-* **Data from the large array**: [here](https://github.com/xaviermouy/XAV-arrays/tree/main/localization/large-array)
-* **Data from the mobile array**: [here](https://github.com/xaviermouy/XAV-arrays/tree/main/localization/mobile-array)
+* **Data subset from the large array**: [here](https://github.com/xaviermouy/XAV-arrays/tree/main/localization/large-array)
+* **Data subset from the mobile array**: [here](https://github.com/xaviermouy/XAV-arrays/tree/main/localization/mobile-array)
+
+For access to the full dataset used in the paper, please see the OSF data repository [here](https://osf.io/q8dz4).
 
 ## Acoustic localization
 Acoustic localization is performed using either linearized inversion or fully non-linear inversion. We provide python code for both approaches. 
