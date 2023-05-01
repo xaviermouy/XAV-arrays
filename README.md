@@ -8,7 +8,7 @@ This repository is accompanying our paper in Methods in Ecology and Evolution. I
 **Supporting information**:  
 [MEE3_14095_Supporting_Information.pdf](MEE3_14095_Supporting_Information.pdf)
 
-**Accompagnying videos**:  
+** Accompanying videos**:  
 [https://www.youtube.com/watch?v=GFAzzoZWC1w&list=PLo2XLRb7oiFB6VV2xkzaiS_TIcYXoezNU](https://www.youtube.com/watch?v=GFAzzoZWC1w&list=PLo2XLRb7oiFB6VV2xkzaiS_TIcYXoezNU)
 
 ## Authors
