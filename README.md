@@ -2,16 +2,13 @@
 
 This repository is accompanying our paper in Methods in Ecology and Evolution. It contains all the necessary information to assemble, operate, deploy, and process data from three eXperimental Audio-Video (XAV) arrays used for identifying fish sounds in the wild. It also include code to optimize the hydrophone placement using simulated annealing.
 
-**Main paper**:
-
+**Main paper**:\  
 [https://doi.org/10.1111/2041-210X.14095](https://doi.org/10.1111/2041-210X.14095)
 
-**Supporting information**:
-
+**Supporting information**:\  
 [MEE3_14095_Supporting_Information.pdf](MEE3_14095_Supporting_Information.pdf)
 
-**Accompagnying videos**:
-
+**Accompagnying videos**:\  
 [https://www.youtube.com/watch?v=GFAzzoZWC1w&list=PLo2XLRb7oiFB6VV2xkzaiS_TIcYXoezNU](https://www.youtube.com/watch?v=GFAzzoZWC1w&list=PLo2XLRb7oiFB6VV2xkzaiS_TIcYXoezNU)
 
 ## Authors
