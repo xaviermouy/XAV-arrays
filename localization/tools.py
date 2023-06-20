@@ -196,6 +196,7 @@ def plot_all_channels(
     step,
     fmin,
     fmax,
+    tchunk_sec = [],
     detections=None,
     detections_channel=0,
     verbose=True,
@@ -209,7 +210,10 @@ def plot_all_channels(
     ):  # for each channel
         # load waveform
         sound = Sound(audio_file)
-        sound.read(channel=channel, unit="sec", detrend=True)
+        if len(tchunk_sec)==0:
+            sound.read(channel=channel, unit="sec", detrend=True)
+        else:
+            sound.read(channel=channel, chunk=tchunk_sec, unit="sec", detrend=True)
         # Calculates  spectrogram
         spectro = Spectrogram(
             frame,

@@ -9,6 +9,7 @@ import os
 import pandas as pd
 import ecosound.core.tools
 from ecosound.core.metadata import DeploymentInfo
+from ecosound.core.audiotools import Sound
 import ecosound
 import tools
 import detection
@@ -17,13 +18,24 @@ import localization
 # #############################################################################
 # input parameters ############################################################
 
-in_dir = r"C:\Users\xavier.mouy\Desktop\Darienne\data\3"
-out_dir = r"C:\Users\xavier.mouy\Desktop\Darienne\results"
-deployment_info_file = r"C:\Users\xavier.mouy\Desktop\Darienne\config_files\deployment_info.csv"  # Deployment metadata
+# in_dir = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Array_data\data\3"
+# out_dir = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Array_data\results"
+# deployment_info_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Array_data\config_files\deployment_info.csv"  # Deployment metadata
 
-hydrophones_config_file = r"C:\Users\xavier.mouy\Desktop\Darienne\config_files\hydrophones_config_07-HI.csv"  # Hydrophones configuration
-detection_config_file = r"C:\Users\xavier.mouy\Desktop\Darienne\config_files\detection_config_large_array.yaml"  # detection parameters
-localization_config_file = r"C:\Users\xavier.mouy\Desktop\Darienne\config_files\localization_config_large_array.yaml"  # localization parameters
+# hydrophones_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Array_data\config_files\hydrophones_config_07-HI.csv"  # Hydrophones configuration
+# detection_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Array_data\config_files\detection_config_large_array.yaml"  # detection parameters
+# localization_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Array_data\config_files\localization_config_large_array.yaml"  # localization parameters
+
+
+in_dir = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Taylor-Islet_LA_dep2\data\1"
+out_dir = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Taylor-Islet_LA_dep2\results"
+deployment_info_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Taylor-Islet_LA_dep2\config_files\deployment_info.csv"  # Deployment metadata
+
+hydrophones_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Taylor-Islet_LA_dep2\config_files\hydrophones_config_07-HI.csv"  # Hydrophones configuration
+detection_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Taylor-Islet_LA_dep2\config_files\detection_config_large_array.yaml"  # detection parameters
+#detection_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Taylor-Islet_LA_dep2\config_files\detection_config_large_array_divers.yaml"  # detection parameters
+localization_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2022_DFO_fish_catalog\Darienne_data\Taylor-Islet_LA_dep2\config_files\localization_config_large_array.yaml"  # localization parameters
+
 
 # #############################################################################
 # #############################################################################
@@ -84,12 +96,39 @@ for idx, in_file in enumerate(files):
             audio_files["channel"][detection_config["AUDIO"]["channel"]],
             detection_config,
             deployment_file=deployment_info_file,
-        )
+        )        
+        # remove detections within 0.5 s from borders to avoid issues
+        chan_wav = Sound(in_file)
+        detections.filter('time_min_offset > 0.5', inplace=True)
+        detections.filter('time_max_offset <'+ str(chan_wav.file_duration_sec-0.5), inplace=True)
+        detections.data.reset_index(drop=True,inplace=True)
         print("-> " + str(len(detections)) + " detections found.")
 
+        print('WARNING ! ONLY keeping the 10 first detection for debuging!!!')        
+        detections.filter('time_max_offset > 784', inplace=True)
+        detections.filter('time_max_offset < 878', inplace=True)
+        detections.data.reset_index(drop=True,inplace=True)
+        
+        #detections.data = detections.data.iloc[1:2]
+        
+        #detections.data['frequency_min'] = 400 #2000          # <----
+        #detections.data['frequency_max'] = 700#15000          # <----
+        #detections.data['time_min_offset'] = 400 # 363.78
+        #detections.data['time_max_offset'] = 350.21 # 365.6
+        
+        # detections.data['frequency_min'] = 0
+        # detections.data['frequency_max'] = 15000
+        # detections.data['time_min_offset'] = 1391.1
+        # detections.data['time_max_offset'] = 1391.18 # 365.6
+        
+        # detections.data['frequency_min'] = 40
+        # detections.data['frequency_max'] = 640
+        # detections.data['time_min_offset'] = 1653.46
+        # detections.data['time_max_offset'] = 1654.18 # 365.6
+        
         # Perform localization using grid search
         print("Localization")
-        localizations, PPDs = localization.GridSearch.run_localization(
+        localizations = localization.GridSearch.run_localization(
             audio_files,
             detections,
             tdoa_grid,
@@ -104,6 +143,7 @@ for idx, in_file in enumerate(files):
         print("Saving results...")
         localizations.to_csv(out_file + ".csv")
         localizations.to_netcdf(out_file + ".nc")
+        localizations.to_raven(out_dir)
         print(" ")
 
     else:
