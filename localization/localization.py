@@ -42,6 +42,8 @@ import tools
 import mpl_toolkits.mplot3d
 
 import dask.array as da
+import dask
+import gc
 
 
 class LinearizedInversion:
@@ -63,32 +65,32 @@ class LinearizedInversion:
                 p2 = Rpairs[i, 1]  # receiver #2 ID
                 for kk in range(M):
                     Term1 = (
-                        (1 / V)
-                        * 0.5
-                        * (
-                            (
-                                ((S[idx, 0] - R[p1, 0]) ** 2)
-                                + ((S[idx, 1] - R[p1, 1]) ** 2)
-                                + ((S[idx, 2] - R[p1, 2]) ** 2)
+                            (1 / V)
+                            * 0.5
+                            * (
+                                    (
+                                            ((S[idx, 0] - R[p1, 0]) ** 2)
+                                            + ((S[idx, 1] - R[p1, 1]) ** 2)
+                                            + ((S[idx, 2] - R[p1, 2]) ** 2)
+                                    )
+                                    ** (-0.5)
                             )
-                            ** (-0.5)
-                        )
-                        * 2
-                        * (S[idx, kk] - R[p1, kk])
+                            * 2
+                            * (S[idx, kk] - R[p1, kk])
                     )
                     Term2 = (
-                        (1 / V)
-                        * 0.5
-                        * (
-                            (
-                                ((S[idx, 0] - R[p2, 0]) ** 2)
-                                + ((S[idx, 1] - R[p2, 1]) ** 2)
-                                + ((S[idx, 2] - R[p2, 2]) ** 2)
+                            (1 / V)
+                            * 0.5
+                            * (
+                                    (
+                                            ((S[idx, 0] - R[p2, 0]) ** 2)
+                                            + ((S[idx, 1] - R[p2, 1]) ** 2)
+                                            + ((S[idx, 2] - R[p2, 2]) ** 2)
+                                    )
+                                    ** (-0.5)
                             )
-                            ** (-0.5)
-                        )
-                        * 2
-                        * (S[idx, kk] - R[p2, kk])
+                            * 2
+                            * (S[idx, kk] - R[p2, kk])
                     )
                     j[i][kk] = Term2 - Term1
                 # for kk, unknown in enumerate(unknowns):
@@ -136,13 +138,13 @@ class LinearizedInversion:
 
     @staticmethod
     def solve_iterative_ML(
-        d,
-        hydrophones_coords,
-        hydrophone_pairs,
-        m,
-        V,
-        damping_factor,
-        verbose=True,
+            d,
+            hydrophones_coords,
+            hydrophone_pairs,
+            m,
+            V,
+            damping_factor,
+            verbose=True,
     ):
         # Define the Jacobian matrix: Eq. (5) in Mouy et al. (2018)
         A = LinearizedInversion.defineJacobian(
@@ -184,7 +186,7 @@ class LinearizedInversion:
 
     @staticmethod
     def calc_data_error(
-        tdoa_sec, m, sound_speed_mps, hydrophones_config, hydrophone_pairs
+            tdoa_sec, m, sound_speed_mps, hydrophones_config, hydrophone_pairs
     ):
         """Calculates tdoa measurement errors. Eq. (9) in Mouy et al. 2018"""
         hydrophones_coord = hydrophones_config[["x", "y", "z"]].to_numpy()
@@ -201,18 +203,18 @@ class LinearizedInversion:
 
     @staticmethod
     def calc_loc_errors(
-        tdoa_errors_std,
-        m,
-        sound_speed_mps,
-        hydrophones_config,
-        hydrophone_pairs,
+            tdoa_errors_std,
+            m,
+            sound_speed_mps,
+            hydrophones_config,
+            hydrophone_pairs,
     ):
         """Calculates localization errors. Eq. (8) in Mouy et al. 2018."""
         hydrophones_coord = hydrophones_config[["x", "y", "z"]].to_numpy()
         A = LinearizedInversion.defineJacobian(
             hydrophones_coord, m, sound_speed_mps, np.array(hydrophone_pairs)
         )
-        Cm = (tdoa_errors_std**2) * np.linalg.inv(
+        Cm = (tdoa_errors_std ** 2) * np.linalg.inv(
             np.dot(A.transpose(), A)
         )  # Model covariance matrix for IID
         err_std = np.sqrt(np.diag(Cm))
@@ -226,13 +228,13 @@ class LinearizedInversion:
 
     @staticmethod
     def solve(
-        d,
-        hydrophones_coords,
-        hydrophone_pairs,
-        inversion_params,
-        sound_speed_mps,
-        verbose=True,
-        doplot=False,
+            d,
+            hydrophones_coords,
+            hydrophone_pairs,
+            inversion_params,
+            sound_speed_mps,
+            verbose=True,
+            doplot=False,
     ):  # linearized_inversion(d, hydrophones_coords,hydrophone_pairs,inversion_params, sound_speed_mps, doplot=False):
         # convert parameters to numpy arrays
         damping_factor = np.array(inversion_params["damping_factor"])
@@ -327,7 +329,7 @@ class LinearizedInversion:
                                 "x": [m_it[0, 0]],
                                 "y": [m_it[0, 1]],
                                 "z": [m_it[0, 2]],
-                                #'norm': np.sqrt(np.square(m_it).sum(axis=1)).values[0],
+                                # 'norm': np.sqrt(np.square(m_it).sum(axis=1)).values[0],
                                 "norm": [
                                     np.linalg.norm(
                                         m_it
@@ -405,13 +407,13 @@ class LinearizedInversion:
 
     @staticmethod
     def run_localization(
-        audio_files,
-        detections,
-        deployment_info,
-        detection_config,
-        hydrophones_config,
-        localization_config,
-        verbose=True,
+            audio_files,
+            detections,
+            deployment_info,
+            detection_config,
+            hydrophones_config,
+            localization_config,
+            verbose=True,
     ):
 
         # localization
@@ -468,7 +470,7 @@ class LinearizedInversion:
                 waveform_stack[detection_config["AUDIO"]["channel"]],
                 percentage_max_energy,
             )
-            waveform_stack = [x[chunk[0] : chunk[1]] for x in waveform_stack]
+            waveform_stack = [x[chunk[0]: chunk[1]] for x in waveform_stack]
 
             # calculate TDOAs
             tdoa_sec, corr_val = calc_tdoa(
@@ -484,7 +486,7 @@ class LinearizedInversion:
             )
 
             valid_tdoas = (
-                np.min(corr_val) > localization_config["TDOA"]["min_corr_val"]
+                    np.min(corr_val) > localization_config["TDOA"]["min_corr_val"]
             )
 
             if valid_tdoas:
@@ -521,31 +523,31 @@ class LinearizedInversion:
                 detec.loc["y_m"] = m[0, 1]
                 detec.loc["z_m"] = m[0, 2]
                 detec.loc["x_err_low_m"] = (
-                    detec.loc["x_m"] - loc_errors_std["x_std"].values[0]
+                        detec.loc["x_m"] - loc_errors_std["x_std"].values[0]
                 )
                 detec.loc["x_err_high_m"] = (
-                    detec.loc["x_m"] + loc_errors_std["x_std"].values[0]
+                        detec.loc["x_m"] + loc_errors_std["x_std"].values[0]
                 )
                 detec.loc["x_err_span_m"] = (
-                    detec.loc["x_err_high_m"] - detec.loc["x_err_low_m"]
+                        detec.loc["x_err_high_m"] - detec.loc["x_err_low_m"]
                 )
                 detec.loc["y_err_low_m"] = (
-                    detec.loc["y_m"] - loc_errors_std["y_std"].values[0]
+                        detec.loc["y_m"] - loc_errors_std["y_std"].values[0]
                 )
                 detec.loc["y_err_high_m"] = (
-                    detec.loc["y_m"] + loc_errors_std["y_std"].values[0]
+                        detec.loc["y_m"] + loc_errors_std["y_std"].values[0]
                 )
                 detec.loc["y_err_span_m"] = (
-                    detec.loc["y_err_high_m"] - detec.loc["y_err_low_m"]
+                        detec.loc["y_err_high_m"] - detec.loc["y_err_low_m"]
                 )
                 detec.loc["z_err_low_m"] = (
-                    detec.loc["z_m"] - loc_errors_std["z_std"].values[0]
+                        detec.loc["z_m"] - loc_errors_std["z_std"].values[0]
                 )
                 detec.loc["z_err_high_m"] = (
-                    detec.loc["z_m"] + loc_errors_std["z_std"].values[0]
+                        detec.loc["z_m"] + loc_errors_std["z_std"].values[0]
                 )
                 detec.loc["z_err_span_m"] = (
-                    detec.loc["z_err_high_m"] - detec.loc["z_err_low_m"]
+                        detec.loc["z_err_high_m"] - detec.loc["z_err_low_m"]
                 )
                 detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std[0]
                 detec.loc["iterations_logs"] = iterations_logs
@@ -581,7 +583,7 @@ class LinearizedInversion:
 class GridSearch:
     @staticmethod
     def calc_data_error(
-        tdoa_sec, m, sound_speed_mps, hydrophones_config, hydrophone_pairs
+            tdoa_sec, m, sound_speed_mps, hydrophones_config, hydrophone_pairs
     ):
         """Calculates tdoa measurement errors. Eq. (9) in Mouy et al. 2018"""
         tdoa_m = predict_tdoa(
@@ -597,14 +599,14 @@ class GridSearch:
 
     @staticmethod
     def create_tdoa_grid(
-        x_limits,
-        y_limits,
-        z_limits,
-        spacing,
-        hydrophones_config,
-        ref_channel,
-        sound_speed_mps,
-        outfile,
+            x_limits,
+            y_limits,
+            z_limits,
+            spacing,
+            hydrophones_config,
+            ref_channel,
+            sound_speed_mps,
+            outfile,
     ):
         hydrophone_pairs = defineReceiverPairs(
             len(hydrophones_config), ref_receiver=ref_channel
@@ -665,36 +667,23 @@ class GridSearch:
             IC_low_limit_idx, remainder = find_half_CI_value(
                 values, IC_low_limit_idx, remainder, -1
             )
-        if sum(values[IC_low_limit_idx : IC_high_limit_idx + 1]) < percentage:
+        if sum(values[IC_low_limit_idx: IC_high_limit_idx + 1]) < percentage:
             print("Issue while calculating the CI")
         return [axis[IC_low_limit_idx], axis[IC_high_limit_idx]]
 
+    @dask.delayed(nout=1)
     @staticmethod
-    def run_localization(
-        audio_files,
-        detections,
-        tdoa_grid,
-        deployment_info,
-        detection_config,
-        hydrophones_config,
-        localization_config,
-        verbose=True,
-    ):
-
-        # localization
-        sound_speed_mps = localization_config["ENVIRONMENT"]["sound_speed_mps"]
-        ref_channel = localization_config["TDOA"]["ref_channel"]
-
-        # define search window based on hydrophone separation and sound speed
-        hydrophones_dist_matrix = tools.calc_hydrophones_distances(
-            hydrophones_config
-        )
-        TDOA_max_sec = np.max(hydrophones_dist_matrix) / sound_speed_mps
-
-        # define hydrophone pairs
-        hydrophone_pairs = defineReceiverPairs(
-            len(hydrophones_config), ref_receiver=ref_channel
-        )
+    def localize_single_detec(detec,
+                              detec_idx,
+                              audio_files,
+                              TDOA_max_sec,
+                              localization_config,
+                              detection_config,
+                              hydrophone_pairs,
+                              tdoa_grid,
+                              modelled_tdoa_grid,
+                              tmp_dir_file,
+                              ):
 
         # Prepare localization object
         localizations = Measurement()
@@ -721,6 +710,274 @@ class GridSearch:
             ]
         ]
 
+        # define the different search frequency bands
+        number_freq_bands = localization_config["TDOA"]["number_freq_bands"]  # 4
+        min_bandwidth_hz = localization_config["TDOA"]["min_bandwidth_hz"]  # 4#200
+        freq_bands = split_freq_bands(detec["frequency_min"], detec["frequency_max"], number_freq_bands,
+                                      min_bandwidth_hz)
+        freq_min_orig = detec["frequency_min"]
+        freq_max_orig = detec["frequency_max"]
+
+        tdoa_sec_stack = []
+        corr_val_stack = []
+        min_delta_tdoa_norm_stack = []
+        min_idx_stack = []
+        delta_tdoa_stack = []
+        delta_tdoa_norm_stack = []
+        for freq_band in freq_bands:  # loop through different freq bands
+
+            detec["frequency_min"] = freq_band[0]
+            detec["frequency_max"] = freq_band[1]
+
+            # load data from all channels for that detection
+            waveform_stack = tools.stack_waveforms(
+                audio_files, detec, TDOA_max_sec
+            )
+
+            # readjust signal boundaries to only focus on section with most energy
+            # percentage_max_energy = 80
+            percentage_max_energy = localization_config["TDOA"]["energy_window_perc"]
+            # chunk = ecosound.core.tools.tighten_signal_limits_peak(
+            #     waveform_stack[detection_config["AUDIO"]["channel"]],
+            #     percentage_max_energy,
+            # )
+
+            chunk = ecosound.core.tools.tighten_signal_limits(
+                waveform_stack[detection_config["AUDIO"]["channel"]],
+                percentage_max_energy,
+            )
+
+            # fig, ax = plt.subplots(nrows=6,ncols=1)
+            # ax[0].plot(waveform_stack[0])
+            # ax[1].plot(waveform_stack[1])
+            # ax[2].plot(waveform_stack[2])
+            # ax[3].plot(waveform_stack[3])
+            # ax[4].plot(waveform_stack[4])
+            # ax[5].plot(waveform_stack[5])
+            # #ax.set_title('Simple plot')
+            # plt.show()
+
+            waveform_stack = [x[chunk[0]: chunk[1]] for x in waveform_stack]
+
+            # fig, ax = plt.subplots(nrows=6,ncols=1)
+            # ax[0].plot(waveform_stack[0])
+            # ax[1].plot(waveform_stack[1])
+            # ax[2].plot(waveform_stack[2])
+            # ax[3].plot(waveform_stack[3])
+            # ax[4].plot(waveform_stack[4])
+            # ax[5].plot(waveform_stack[5])
+            # #ax.set_title('Simple plot')
+            # plt.show()
+
+            # calculate TDOAs
+            tdoa_sec, corr_val = calc_tdoa(
+                waveform_stack,
+                hydrophone_pairs,
+                detec["audio_sampling_frequency"],
+                TDOA_max_sec=TDOA_max_sec,
+                upsample_res_sec=localization_config["TDOA"][
+                    "upsample_res_sec"
+                ],
+                normalize=localization_config["TDOA"]["normalize"],
+                doplot=False,
+            )
+
+            # Find grid location minimizing the data misfit
+            delta_tdoa = modelled_tdoa_grid - tdoa_sec
+            delta_tdoa_norm = da.linalg.norm(delta_tdoa, axis=0)
+            min_idx = da.argmin(delta_tdoa_norm)
+            min_delta_tdoa_norm = delta_tdoa_norm[min_idx]
+
+            # stack values for each frequency band tested
+            tdoa_sec_stack.append(tdoa_sec)
+            corr_val_stack.append(corr_val)
+            delta_tdoa_stack.append(delta_tdoa)
+            delta_tdoa_norm_stack.append(delta_tdoa_norm)
+
+            # NEW
+            # min_delta_tdoa_norm = client.persist(min_delta_tdoa_norm)
+            # min_idx = client.persist(min_idx)
+            # min_idx_stack.append(min_idx)
+            # min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm)
+
+            # min_idx_stack.append(min_idx)
+            # min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm)
+            # OLD
+            min_idx_stack.append(min_idx.compute())
+            min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm.compute())
+
+        # print('----')
+        # print(detec_idx)
+
+        # min_idx_stack = dask.compute(min_idx_stack)
+        # # min_idx_stack = dask.persist(min_idx_stack)
+        # min_delta_tdoa_norm_stack = dask.compute(min_delta_tdoa_norm_stack, nout=1)
+        # # min_delta_tdoa_norm_stack = dask.persist(min_delta_tdoa_norm_stack, nout=1)
+        # min_idx_stack = min_idx_stack[0]
+        # min_delta_tdoa_norm_stack = min_delta_tdoa_norm_stack[0]
+        # print(min_idx_stack)
+        # print(min_delta_tdoa_norm_stack)
+
+        # decide best frequency band (the one minimizing the data misfit)
+        best_freqband_idx = np.argmin(min_delta_tdoa_norm_stack)
+        best_freqband = freq_bands[best_freqband_idx]
+        tdoa_sec = tdoa_sec_stack[best_freqband_idx]
+        corr_val = corr_val_stack[best_freqband_idx]
+        delta_tdoa = delta_tdoa_stack[best_freqband_idx]
+        delta_tdoa_norm = delta_tdoa_norm_stack[best_freqband_idx]
+        # print(best_freqband_idx)
+        min_idx = min_idx_stack[best_freqband_idx]
+        min_delta_tdoa_norm = min_delta_tdoa_norm_stack[best_freqband_idx]
+
+        # clear intermediate _stack variable to save memory
+        tdoa_sec_stack = []
+        corr_val_stack = []
+        min_delta_tdoa_norm_stack = []
+        min_idx_stack = []
+        delta_tdoa_stack = []
+        delta_tdoa_norm_stack = []
+
+        if np.min(corr_val) > localization_config["TDOA"]["min_corr_val"]:
+
+            # Solution
+            m = tdoa_grid["grid_coord"][min_idx].T
+
+            # Estimate data errors
+            N = 1
+            tdoa_errors_std = np.sqrt(sum(delta_tdoa[:, min_idx] ** 2) / (np.prod(delta_tdoa[:, min_idx].shape) - N))
+
+            # Unnormalized likelihood
+            L = np.exp(
+                -delta_tdoa_norm ** 2
+                / (2 * (tdoa_errors_std ** 2))
+            )
+            # Normalized PPD
+            PPD = L / L.sum()
+
+            # Convert linear array into dataframe then 3D numpy array
+            PPD_df = pd.DataFrame({"x": [], "y": [], "z": [], "PPD": []})
+            PPD_df[["x", "y", "z"]] = tdoa_grid["grid_coord"]
+            PPD_df["PPD"] = PPD
+            PPD_df = PPD_df.set_index(["x", "y", "z"])
+            PPD_xr = PPD_df.to_xarray()
+
+            # calculate 2D marginals
+            # Pxy = PPD_xr.PPD.sum("z")
+            # Pxz = PPD_xr.PPD.sum("y")
+            # Pyz = PPD_xr.PPD.sum("x")
+
+            # calculate 1D marginals
+            Px = PPD_xr.PPD.sum("z").sum("y")
+            Py = PPD_xr.PPD.sum("x").sum("z")
+            Pz = PPD_xr.PPD.sum("x").sum("y")
+
+            # calculate credibility intervals from 1D marginals
+            percentage = 0.68  # % for CI
+            Px_CI = GridSearch.calc_credibility_interval(
+                Px["x"].values, Px.to_numpy(), m[0], percentage
+            )
+            Py_CI = GridSearch.calc_credibility_interval(
+                Py["y"].values, Py.to_numpy(), m[1], percentage
+            )
+            Pz_CI = GridSearch.calc_credibility_interval(
+                Pz["z"].values, Pz.to_numpy(), m[2], percentage
+            )
+
+            # Bring all detection and localization informations together
+            detec.loc["x_m"] = m[0]
+            detec.loc["y_m"] = m[1]
+            detec.loc["z_m"] = m[2]
+            detec.loc["x_err_low_m"] = Px_CI[0]
+            detec.loc["x_err_high_m"] = Px_CI[1]
+            detec.loc["x_err_span_m"] = (
+                    detec.loc["x_err_high_m"] - detec.loc["x_err_low_m"]
+            )
+            detec.loc["y_err_low_m"] = Py_CI[0]
+            detec.loc["y_err_high_m"] = Py_CI[1]
+            detec.loc["y_err_span_m"] = (
+                    detec.loc["y_err_high_m"] - detec.loc["y_err_low_m"]
+            )
+            detec.loc["z_err_low_m"] = Pz_CI[0]
+            detec.loc["z_err_high_m"] = Pz_CI[1]
+            detec.loc["z_err_span_m"] = (
+                    detec.loc["z_err_high_m"] - detec.loc["z_err_low_m"]
+            )
+            # OLD
+            detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std.compute()
+            # detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std.persist()
+            # NEW
+            # detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std
+            detec.loc["tdoa_sec"] = str(tdoa_sec.T[0])
+            detec.loc["best_freq_band_hz"] = str(best_freqband)
+            detec.loc["corr_val"] = str(corr_val.T[0])
+            detec.loc["frequency_min"] = freq_min_orig
+            detec.loc["frequency_max"] = freq_max_orig
+            # detec.loc["frequency_min"] = detections.data["frequency_min"].iloc[detec_idx]
+            # detec.loc["frequency_max"] = detections.data["frequency_max"].iloc[detec_idx]
+
+            # detec.loc['PPD'] = PPD_xr
+            detec = detec.to_frame().T
+            # save PPDs
+            # PPDs[detec_idx] = PPD_xr
+        else:
+            detec.loc["x_m"] = np.nan
+            detec.loc["y_m"] = np.nan
+            detec.loc["z_m"] = np.nan
+            detec.loc["x_err_low_m"] = np.nan
+            detec.loc["x_err_high_m"] = np.nan
+            detec.loc["x_err_span_m"] = np.nan
+            detec.loc["y_err_low_m"] = np.nan
+            detec.loc["y_err_high_m"] = np.nan
+            detec.loc["y_err_span_m"] = np.nan
+            detec.loc["z_err_low_m"] = np.nan
+            detec.loc["z_err_high_m"] = np.nan
+            detec.loc["z_err_span_m"] = np.nan
+            detec.loc["tdoa_errors_std_sec"] = np.nan
+            detec.loc["tdoa_sec"] = str(tdoa_sec.T[0])
+            detec.loc["best_freq_band_hz"] = ''
+            detec.loc["corr_val"] = str(corr_val.T[0])
+            detec.loc["frequency_min"] = freq_min_orig
+            detec.loc["frequency_max"] = freq_max_orig
+            # detec.loc["frequency_min"] = detections.data["frequency_min"].iloc[detec_idx]
+            # detec.loc["frequency_max"] = detections.data["frequency_max"].iloc[detec_idx]
+            # detec.loc['PPD'] = np.nan
+            detec = detec.to_frame().T
+
+        # write result in tmp folder
+        # localizations.data = detec
+        # localizations.to_netcdf(os.path.join(tmp_dir_file, str(detec_idx) + ".nc"))
+        print('One localization processed')
+        # return localizations
+        return Pz_CI[0]
+
+    @staticmethod
+    def run_localization(
+            audio_files,
+            detections,
+            tdoa_grid,
+            deployment_info,
+            detection_config,
+            hydrophones_config,
+            localization_config,
+            tmp_dir_file,
+            verbose=True,
+    ):
+
+        # localization
+        sound_speed_mps = localization_config["ENVIRONMENT"]["sound_speed_mps"]
+        ref_channel = localization_config["TDOA"]["ref_channel"]
+
+        # define search window based on hydrophone separation and sound speed
+        hydrophones_dist_matrix = tools.calc_hydrophones_distances(
+            hydrophones_config
+        )
+        TDOA_max_sec = np.max(hydrophones_dist_matrix) / sound_speed_mps
+
+        # define hydrophone pairs
+        hydrophone_pairs = defineReceiverPairs(
+            len(hydrophones_config), ref_receiver=ref_channel
+        )
+
         # print('LOCALIZATION')
         # Go through all detections and resolve localization
         m = np.zeros([3, len(detections)])
@@ -728,231 +985,53 @@ class GridSearch:
         grid_data_misfit = [[]] * len(detections)
         tdoa_xcorr_vals = np.zeros([len(hydrophone_pairs), len(detections)])
         PPDs = [[]] * len(detections)
-        
-        modelled_tdoa_grid = da.from_array(tdoa_grid["tdoa"],chunks=100000)
-        
-        for detec_idx, detec in tqdm(
-            detections.data.iterrows(),
-            total=len(detections),
-            desc=" localizing source",
-            leave=True,
-            miniters=1,
-            colour="green",
-        ):
 
-            # define the different search frequency bands
-            number_freq_bands = localization_config["TDOA"]["number_freq_bands"]#4
-            min_bandwidth_hz = localization_config["TDOA"]["min_bandwidth_hz"]#4#200
-            freq_bands = split_freq_bands(detec["frequency_min"], detec["frequency_max"], number_freq_bands, min_bandwidth_hz)
-            
-            tdoa_sec_stack = []
-            corr_val_stack = []
-            min_delta_tdoa_norm_stack = []
-            min_idx_stack = []
-            delta_tdoa_stack = [] 
-            delta_tdoa_norm_stack = []
-            for freq_band in freq_bands: # loop through different freq bands
-                
-                detec["frequency_min"] = freq_band[0]
-                detec["frequency_max"] = freq_band[1]
-                
-                # load data from all channels for that detection
-                waveform_stack = tools.stack_waveforms(
-                    audio_files, detec, TDOA_max_sec
-                )
-    
-                # readjust signal boundaries to only focus on section with most energy
-                #percentage_max_energy = 80
-                percentage_max_energy = localization_config["TDOA"]["energy_window_perc"]
-                # chunk = ecosound.core.tools.tighten_signal_limits_peak(
-                #     waveform_stack[detection_config["AUDIO"]["channel"]],
-                #     percentage_max_energy,
-                # )
-                
-                chunk = ecosound.core.tools.tighten_signal_limits(
-                    waveform_stack[detection_config["AUDIO"]["channel"]],
-                    percentage_max_energy,
-                )                
-                           
-                
-                # fig, ax = plt.subplots(nrows=6,ncols=1)
-                # ax[0].plot(waveform_stack[0])
-                # ax[1].plot(waveform_stack[1])
-                # ax[2].plot(waveform_stack[2])
-                # ax[3].plot(waveform_stack[3])
-                # ax[4].plot(waveform_stack[4])
-                # ax[5].plot(waveform_stack[5])
-                # #ax.set_title('Simple plot')
-                # plt.show()
-                
-                waveform_stack = [x[chunk[0] : chunk[1]] for x in waveform_stack] 
-                
-                # fig, ax = plt.subplots(nrows=6,ncols=1)
-                # ax[0].plot(waveform_stack[0])
-                # ax[1].plot(waveform_stack[1])
-                # ax[2].plot(waveform_stack[2])
-                # ax[3].plot(waveform_stack[3])
-                # ax[4].plot(waveform_stack[4])
-                # ax[5].plot(waveform_stack[5])
-                # #ax.set_title('Simple plot')
-                # plt.show()
-                
+        modelled_tdoa_grid = da.from_array(tdoa_grid["tdoa"], chunks=100000)
+        modelled_tdoa_grid = modelled_tdoa_grid.compute()
 
-                # calculate TDOAs
-                tdoa_sec, corr_val = calc_tdoa(
-                    waveform_stack,
-                    hydrophone_pairs,
-                    detec["audio_sampling_frequency"],
-                    TDOA_max_sec=TDOA_max_sec,
-                    upsample_res_sec=localization_config["TDOA"][
-                        "upsample_res_sec"
-                    ],
-                    normalize=localization_config["TDOA"]["normalize"],
-                    doplot=False,
-                )
-                
-                # Find grid location minimizing the data misfit
-                delta_tdoa = modelled_tdoa_grid - tdoa_sec
-                delta_tdoa_norm = da.linalg.norm(delta_tdoa, axis=0)
-                min_idx = da.argmin(delta_tdoa_norm)
-                min_delta_tdoa_norm = delta_tdoa_norm[min_idx]
-                
-                # stack values for each frequency band tested
-                tdoa_sec_stack.append(tdoa_sec)
-                corr_val_stack.append(corr_val)
-                delta_tdoa_stack.append(delta_tdoa)
-                delta_tdoa_norm_stack.append(delta_tdoa_norm)
-                min_idx_stack.append(min_idx.compute())
-                min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm.compute())
+        lazy_results = []
+        # bag = detections.data.to_bag(npartitions=2)
+        # rt2 = bag.map(lambda x: teststr2(x[0], x[1])).compute()
 
-            
-            # decide best frequency band (the one minimizing the data misfit)
-            best_freqband_idx = np.argmin(min_delta_tdoa_norm_stack)
-            best_freqband = freq_bands[best_freqband_idx]
-            tdoa_sec = tdoa_sec_stack[best_freqband_idx]
-            corr_val = corr_val_stack[best_freqband_idx]
-            delta_tdoa = delta_tdoa_stack[best_freqband_idx]
-            delta_tdoa_norm = delta_tdoa_norm_stack[best_freqband_idx]
-            min_idx = min_idx_stack[best_freqband_idx]
-            min_delta_tdoa_norm = min_delta_tdoa_norm_stack [best_freqband_idx]
-            
-            # clear intermediate _stack variable to save memory
-            tdoa_sec_stack = []
-            corr_val_stack = []
-            min_delta_tdoa_norm_stack = []
-            min_idx_stack = []
-            delta_tdoa_stack = [] 
-            delta_tdoa_norm_stack = []
-            
-            
-            if np.min(corr_val) > localization_config["TDOA"]["min_corr_val"]:
-            
-                # Solution
-                m = tdoa_grid["grid_coord"][min_idx].T
-                
-                # Estimate data errors            
-                N=1
-                tdoa_errors_std = np.sqrt(sum(delta_tdoa[:, min_idx]**2) / (np.prod(delta_tdoa[:, min_idx].shape)-N))
-                
-                # Unnormalized likelihood
-                L = np.exp(
-                    -delta_tdoa_norm ** 2
-                    / (2 * (tdoa_errors_std**2))
-                )
-                # Normalized PPD
-                PPD = L / L.sum()            
-                
-                # Convert linear array into dataframe then 3D numpy array
-                PPD_df = pd.DataFrame({"x": [], "y": [], "z": [], "PPD": []})
-                PPD_df[["x", "y", "z"]] = tdoa_grid["grid_coord"]
-                PPD_df["PPD"] = PPD
-                PPD_df = PPD_df.set_index(["x", "y", "z"])
-                PPD_xr = PPD_df.to_xarray()
-    
-                # calculate 2D marginals
-                # Pxy = PPD_xr.PPD.sum("z")
-                # Pxz = PPD_xr.PPD.sum("y")
-                # Pyz = PPD_xr.PPD.sum("x")
-    
-                # calculate 1D marginals
-                Px = PPD_xr.PPD.sum("z").sum("y")
-                Py = PPD_xr.PPD.sum("x").sum("z")
-                Pz = PPD_xr.PPD.sum("x").sum("y")
-    
-                # calculate credibility intervals from 1D marginals
-                percentage = 0.68  # % for CI
-                Px_CI = GridSearch.calc_credibility_interval(
-                    Px["x"].values, Px.to_numpy(), m[0], percentage
-                )
-                Py_CI = GridSearch.calc_credibility_interval(
-                    Py["y"].values, Py.to_numpy(), m[1], percentage
-                )
-                Pz_CI = GridSearch.calc_credibility_interval(
-                    Pz["z"].values, Pz.to_numpy(), m[2], percentage
-                )
-    
-                # Bring all detection and localization informations together
-                detec.loc["x_m"] = m[0]
-                detec.loc["y_m"] = m[1]
-                detec.loc["z_m"] = m[2]
-                detec.loc["x_err_low_m"] = Px_CI[0]
-                detec.loc["x_err_high_m"] = Px_CI[1]
-                detec.loc["x_err_span_m"] = (
-                    detec.loc["x_err_high_m"] - detec.loc["x_err_low_m"]
-                )
-                detec.loc["y_err_low_m"] = Py_CI[0]
-                detec.loc["y_err_high_m"] = Py_CI[1]
-                detec.loc["y_err_span_m"] = (
-                    detec.loc["y_err_high_m"] - detec.loc["y_err_low_m"]
-                )
-                detec.loc["z_err_low_m"] = Pz_CI[0]
-                detec.loc["z_err_high_m"] = Pz_CI[1]
-                detec.loc["z_err_span_m"] = (
-                    detec.loc["z_err_high_m"] - detec.loc["z_err_low_m"]
-                )
-                detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std.compute()
-                detec.loc["tdoa_sec"] = str(tdoa_sec.T[0])
-                detec.loc["best_freq_band_hz"] = str(best_freqband)
-                detec.loc["corr_val"] = str(corr_val.T[0])
-                detec.loc["frequency_min"] = detections.data["frequency_min"].iloc[detec_idx]
-                detec.loc["frequency_max"] = detections.data["frequency_max"].iloc[detec_idx]
-                
-                # detec.loc['PPD'] = PPD_xr
-                detec = detec.to_frame().T
-                # save PPDs
-                #PPDs[detec_idx] = PPD_xr
-            else:
-                
-                detec.loc["x_m"] = np.nan
-                detec.loc["y_m"] = np.nan
-                detec.loc["z_m"] = np.nan
-                detec.loc["x_err_low_m"] = np.nan
-                detec.loc["x_err_high_m"] = np.nan
-                detec.loc["x_err_span_m"] = np.nan
-                detec.loc["y_err_low_m"] = np.nan
-                detec.loc["y_err_high_m"] = np.nan
-                detec.loc["y_err_span_m"] = np.nan
-                detec.loc["z_err_low_m"] = np.nan
-                detec.loc["z_err_high_m"] = np.nan
-                detec.loc["z_err_span_m"] = np.nan
-                detec.loc["tdoa_errors_std_sec"] = np.nan
-                detec.loc["tdoa_sec"] = str(tdoa_sec.T[0])
-                detec.loc["best_freq_band_hz"] = ''
-                detec.loc["corr_val"] = str(corr_val.T[0])
-                detec.loc["frequency_min"] = detections.data["frequency_min"].iloc[detec_idx]
-                detec.loc["frequency_max"] = detections.data["frequency_max"].iloc[detec_idx]
-                # detec.loc['PPD'] = np.nan
-                detec = detec.to_frame().T
+        for detec_idx, detec in detections.data.iterrows():
+            # if detec_idx == 100:
+            #    break
+            lazy_result = localize_single_detec(detec,
+                                                detec_idx,
+                                                audio_files,
+                                                TDOA_max_sec,
+                                                localization_config,
+                                                detection_config,
+                                                hydrophone_pairs,
+                                                tdoa_grid,
+                                                modelled_tdoa_grid,
+                                                tmp_dir_file)
+            lazy_results.append(lazy_result)
+        results = dask.compute(lazy_results)
 
-            # stack to results into localization object
-            if len(localizations) == 0:
-                localizations.data = detec
-            else:
-                localizations.data = pd.concat(
-                    [localizations.data, detec], axis=0
-                )
+        print('Compiling all localizations into a single file')
+        localizations = Measurement()
+        localizations.from_netcdf(tmp_dir_file)
+        print('Done')
+
+        # batch_size = 8
+        # detecs = list(range(0, len(lazy_results), batch_size))
+        # detecs.append(len(lazy_results))
+        # seq =[]
+        # for vec_idx, det_idx in enumerate(detecs[0:-1]):
+        #     id1 = det_idx
+        #     id2 = detecs[vec_idx+1]
+        #     if (id1 == id2):
+        #         seq.append([det_idx,detecs[-1]])
+        #     else:
+        #         seq.append([id1, id2])
+        #     #print(seq)
+        # for seq_n in seq:
+        #     print(seq_n)
+        #     results = dask.compute(lazy_results[seq_n[0]:seq_n[1]])
+        #     del results
+        #     gc.collect()
         # print("...done")
-
         return localizations
 
 
@@ -1015,14 +1094,14 @@ def predict_tdoa(m, V, hydrophones_coords, hydrophones_pairs):
 
 
 def calc_tdoa(
-    waveform_stack,
-    hydrophone_pairs,
-    sampling_frequency,
-    TDOA_max_sec=None,
-    upsample_res_sec=None,
-    normalize=False,
-    hydrophones_name=None,
-    doplot=False,
+        waveform_stack,
+        hydrophone_pairs,
+        sampling_frequency,
+        TDOA_max_sec=None,
+        upsample_res_sec=None,
+        normalize=False,
+        hydrophones_name=None,
+        doplot=False,
 ):
     """
     TDOA measurements
@@ -1107,20 +1186,20 @@ def calc_tdoa(
         # Identify correlation peak within the TDOA search window (SW)
         if TDOA_max_sec:
             tmp1 = np.where(lag_array == -TDOA_max_samp)
-            if len(tmp1[0])>0:
-                SW_start_idx =tmp1[0][0]  # search window start idx
+            if len(tmp1[0]) > 0:
+                SW_start_idx = tmp1[0][0]  # search window start idx
             else:
                 SW_start_idx = 0
             tmp2 = np.where(lag_array == TDOA_max_samp)
-            if len(tmp2[0])>0:
+            if len(tmp2[0]) > 0:
                 SW_stop_idx = tmp2[0][0]  # search window stop idx
             else:
-                SW_stop_idx = len(corr) - 1 # search window stop idx
+                SW_stop_idx = len(corr) - 1  # search window stop idx
         else:
             SW_start_idx = 0
             SW_stop_idx = len(corr) - 1
         corr_max_idx = (
-            np.argmax(corr[SW_start_idx:SW_stop_idx]) + SW_start_idx
+                np.argmax(corr[SW_start_idx:SW_stop_idx]) + SW_start_idx
         )  # idx of max corr value
         delay = lag_array[corr_max_idx]
         corr_value = corr[corr_max_idx]
@@ -1169,7 +1248,6 @@ def calc_tdoa(
 
 
 def plot_localizations3D(localizations=None, hydrophones=None):
-
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
@@ -1238,7 +1316,6 @@ def plot_localizations3D(localizations=None, hydrophones=None):
 
 
 def find_half_CI_value(values, start_index, stop_val, step):
-
     # Regarding the credibility intervals, don't change them for your thesis,
     # but another way to do them (probably better than what I suggested
     # yesterday) is "centred" CIs which are centred in each dimension on the MAP
@@ -1253,9 +1330,9 @@ def find_half_CI_value(values, start_index, stop_val, step):
     current_sum = 0
     max_idx = len(values) - 1
     while (
-        (current_sum < stop_val)
-        & (current_idx >= 0)
-        & (current_idx <= max_idx)
+            (current_sum < stop_val)
+            & (current_idx >= 0)
+            & (current_idx <= max_idx)
     ):
         current_sum += values[current_idx]
         if values[current_idx] < min_current_value:
@@ -1264,10 +1341,10 @@ def find_half_CI_value(values, start_index, stop_val, step):
     remainder = stop_val - current_sum
     return current_idx - step, remainder
 
-def split_freq_bands(freq_min, freq_max, number_freq_bands, min_bandwidth_hz):
 
-    freq_band = freq_max - freq_min # bw
-    if freq_band > min_bandwidth_hz: # if detection bw > 300 Hz
+def split_freq_bands(freq_min, freq_max, number_freq_bands, min_bandwidth_hz):
+    freq_band = freq_max - freq_min  # bw
+    if freq_band > min_bandwidth_hz:  # if detection bw > 300 Hz
         # break down into sub-bands    
         fb_check = True
         while fb_check == True:
@@ -1277,17 +1354,310 @@ def split_freq_bands(freq_min, freq_max, number_freq_bands, min_bandwidth_hz):
                 number_freq_bands = number_freq_bands - 1
             else:
                 fb_check = False
-        #print(freq_interval)
+        # print(freq_interval)
 
-        freqs = np.arange(freq_min, freq_max,freq_interval)
-        freqs = np.append(freqs,freq_max)
-        #print(freqs)
-        freq_bands=[[freqs[0],freqs[-1]]]
+        freqs = np.arange(freq_min, freq_max, freq_interval)
+        freqs = np.append(freqs, freq_max)
+        # print(freqs)
+        freq_bands = [[freqs[0], freqs[-1]]]
         for idx, val in enumerate(freqs):
-            #print(idx)
-            if idx < len(freqs)-1:
-                freq_bands.append([val, freqs[idx+1]])
+            # print(idx)
+            if idx < len(freqs) - 1:
+                freq_bands.append([val, freqs[idx + 1]])
     else:
-        freq_bands=[[freq_min,freq_max]]
+        freq_bands = [[freq_min, freq_max]]
 
     return freq_bands
+
+
+@dask.delayed()
+def localize_single_detec(detec,
+                          detec_idx,
+                          audio_files,
+                          TDOA_max_sec,
+                          localization_config,
+                          detection_config,
+                          hydrophone_pairs,
+                          tdoa_grid,
+                          modelled_tdoa_grid,
+                          tmp_dir_file,
+                          ):
+    # modelled_tdoa_grid = da.from_array(tdoa_grid["tdoa"], chunks=100000)
+    if os.path.exists(os.path.join(tmp_dir_file, str(detec_idx) + ".nc")) is True:
+        print('detection already localized')
+    else:
+        # Prepare localization object
+        localizations = Measurement()
+        localizations.metadata["measurer_name"] = "Grid Search"
+        localizations.metadata["measurer_version"] = "0.1"
+        localizations.metadata["measurements_name"] = [
+            [
+                "x_m",
+                "y_m",
+                "z_m",
+                "x_err_low_m",
+                "x_err_high_m",
+                "x_err_span_m",
+                "y_err_low_m",
+                "y_err_high_m",
+                "y_err_span_m",
+                "z_err_low_m",
+                "z_err_high_m",
+                "z_err_span_m",
+                "tdoa_sec",
+                "tdoa_errors_std_sec",
+                "best_freq_band_hz",
+                "corr_val",
+            ]
+        ]
+
+        # define the different search frequency bands
+        number_freq_bands = localization_config["TDOA"]["number_freq_bands"]  # 4
+        min_bandwidth_hz = localization_config["TDOA"]["min_bandwidth_hz"]  # 4#200
+        freq_bands = split_freq_bands(detec["frequency_min"], detec["frequency_max"], number_freq_bands,
+                                      min_bandwidth_hz)
+        freq_min_orig = detec["frequency_min"]
+        freq_max_orig = detec["frequency_max"]
+
+        tdoa_sec_stack = []
+        corr_val_stack = []
+        min_delta_tdoa_norm_stack = []
+        min_idx_stack = []
+        delta_tdoa_stack = []
+        delta_tdoa_norm_stack = []
+        for freq_band in freq_bands:  # loop through different freq bands
+
+            detec["frequency_min"] = freq_band[0]
+            detec["frequency_max"] = freq_band[1]
+
+            # load data from all channels for that detection
+            waveform_stack = tools.stack_waveforms(
+                audio_files, detec, TDOA_max_sec
+            )
+
+            # readjust signal boundaries to only focus on section with most energy
+            # percentage_max_energy = 80
+            percentage_max_energy = localization_config["TDOA"]["energy_window_perc"]
+            # chunk = ecosound.core.tools.tighten_signal_limits_peak(
+            #     waveform_stack[detection_config["AUDIO"]["channel"]],
+            #     percentage_max_energy,
+            # )
+
+            chunk = ecosound.core.tools.tighten_signal_limits(
+                waveform_stack[detection_config["AUDIO"]["channel"]],
+                percentage_max_energy,
+            )
+
+            # fig, ax = plt.subplots(nrows=6,ncols=1)
+            # ax[0].plot(waveform_stack[0])
+            # ax[1].plot(waveform_stack[1])
+            # ax[2].plot(waveform_stack[2])
+            # ax[3].plot(waveform_stack[3])
+            # ax[4].plot(waveform_stack[4])
+            # ax[5].plot(waveform_stack[5])
+            # #ax.set_title('Simple plot')
+            # plt.show()
+
+            waveform_stack = [x[chunk[0]: chunk[1]] for x in waveform_stack]
+
+            # fig, ax = plt.subplots(nrows=6,ncols=1)
+            # ax[0].plot(waveform_stack[0])
+            # ax[1].plot(waveform_stack[1])
+            # ax[2].plot(waveform_stack[2])
+            # ax[3].plot(waveform_stack[3])
+            # ax[4].plot(waveform_stack[4])
+            # ax[5].plot(waveform_stack[5])
+            # #ax.set_title('Simple plot')
+            # plt.show()
+
+            # calculate TDOAs
+            tdoa_sec, corr_val = calc_tdoa(
+                waveform_stack,
+                hydrophone_pairs,
+                detec["audio_sampling_frequency"],
+                TDOA_max_sec=TDOA_max_sec,
+                upsample_res_sec=localization_config["TDOA"][
+                    "upsample_res_sec"
+                ],
+                normalize=localization_config["TDOA"]["normalize"],
+                doplot=False,
+            )
+
+            # Find grid location minimizing the data misfit
+            delta_tdoa = modelled_tdoa_grid - tdoa_sec
+            # delta_tdoa_norm = da.linalg.norm(delta_tdoa, axis=0)  # <= changed
+            delta_tdoa_norm = np.linalg.norm(delta_tdoa, axis=0)
+            # min_idx = da.argmin(delta_tdoa_norm)
+            min_idx = np.argmin(delta_tdoa_norm)
+            min_delta_tdoa_norm = delta_tdoa_norm[min_idx]
+
+            # stack values for each frequency band tested
+            tdoa_sec_stack.append(tdoa_sec)
+            corr_val_stack.append(corr_val)
+            delta_tdoa_stack.append(delta_tdoa)
+            delta_tdoa_norm_stack.append(delta_tdoa_norm)
+
+            # NEW
+            # min_delta_tdoa_norm = client.persist(min_delta_tdoa_norm)
+            # min_idx = client.persist(min_idx)
+            # min_idx_stack.append(min_idx)
+            # min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm)
+
+            # min_idx_stack.append(min_idx)
+            # min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm)
+            # OLD
+            # min_idx_stack.append(min_idx.compute())
+            min_idx_stack.append(min_idx)
+            # min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm.compute())
+            min_delta_tdoa_norm_stack.append(min_delta_tdoa_norm)
+
+        # print('----')
+        # print(detec_idx)
+
+        # min_idx_stack = dask.compute(min_idx_stack)
+        # # min_idx_stack = dask.persist(min_idx_stack)
+        # min_delta_tdoa_norm_stack = dask.compute(min_delta_tdoa_norm_stack, nout=1)
+        # # min_delta_tdoa_norm_stack = dask.persist(min_delta_tdoa_norm_stack, nout=1)
+        # min_idx_stack = min_idx_stack[0]
+        # min_delta_tdoa_norm_stack = min_delta_tdoa_norm_stack[0]
+        # print(min_idx_stack)
+        # print(min_delta_tdoa_norm_stack)
+
+        # decide best frequency band (the one minimizing the data misfit)
+        best_freqband_idx = np.argmin(min_delta_tdoa_norm_stack)
+        best_freqband = freq_bands[best_freqband_idx]
+        tdoa_sec = tdoa_sec_stack[best_freqband_idx]
+        corr_val = corr_val_stack[best_freqband_idx]
+        delta_tdoa = delta_tdoa_stack[best_freqband_idx]
+        delta_tdoa_norm = delta_tdoa_norm_stack[best_freqband_idx]
+        # print(best_freqband_idx)
+        min_idx = min_idx_stack[best_freqband_idx]
+        min_delta_tdoa_norm = min_delta_tdoa_norm_stack[best_freqband_idx]
+
+        # clear intermediate _stack variable to save memory
+        tdoa_sec_stack = []
+        corr_val_stack = []
+        min_delta_tdoa_norm_stack = []
+        min_idx_stack = []
+        delta_tdoa_stack = []
+        delta_tdoa_norm_stack = []
+
+        if np.min(corr_val) > localization_config["TDOA"]["min_corr_val"]:
+
+            # Solution
+            m = tdoa_grid["grid_coord"][min_idx].T
+
+            # Estimate data errors
+            N = 1
+            tdoa_errors_std = np.sqrt(sum(delta_tdoa[:, min_idx] ** 2) / (np.prod(delta_tdoa[:, min_idx].shape) - N))
+
+            # Unnormalized likelihood
+            L = np.exp(
+                -delta_tdoa_norm ** 2
+                / (2 * (tdoa_errors_std ** 2))
+            )
+            # Normalized PPD
+            PPD = L / L.sum()
+
+            # Convert linear array into dataframe then 3D numpy array
+            PPD_df = pd.DataFrame({"x": [], "y": [], "z": [], "PPD": []})
+            PPD_df[["x", "y", "z"]] = tdoa_grid["grid_coord"]
+            PPD_df["PPD"] = PPD
+            PPD_df = PPD_df.set_index(["x", "y", "z"])
+            PPD_xr = PPD_df.to_xarray()
+
+            # calculate 2D marginals
+            # Pxy = PPD_xr.PPD.sum("z")
+            # Pxz = PPD_xr.PPD.sum("y")
+            # Pyz = PPD_xr.PPD.sum("x")
+
+            # calculate 1D marginals
+            Px = PPD_xr.PPD.sum("z").sum("y")
+            Py = PPD_xr.PPD.sum("x").sum("z")
+            Pz = PPD_xr.PPD.sum("x").sum("y")
+
+            # calculate credibility intervals from 1D marginals
+            percentage = 0.68  # % for CI
+            Px_CI = GridSearch.calc_credibility_interval(
+                Px["x"].values, Px.to_numpy(), m[0], percentage
+            )
+            Py_CI = GridSearch.calc_credibility_interval(
+                Py["y"].values, Py.to_numpy(), m[1], percentage
+            )
+            Pz_CI = GridSearch.calc_credibility_interval(
+                Pz["z"].values, Pz.to_numpy(), m[2], percentage
+            )
+
+            # Bring all detection and localization informations together
+            detec.loc["x_m"] = m[0]
+            detec.loc["y_m"] = m[1]
+            detec.loc["z_m"] = m[2]
+            detec.loc["x_err_low_m"] = Px_CI[0]
+            detec.loc["x_err_high_m"] = Px_CI[1]
+            detec.loc["x_err_span_m"] = (
+                    detec.loc["x_err_high_m"] - detec.loc["x_err_low_m"]
+            )
+            detec.loc["y_err_low_m"] = Py_CI[0]
+            detec.loc["y_err_high_m"] = Py_CI[1]
+            detec.loc["y_err_span_m"] = (
+                    detec.loc["y_err_high_m"] - detec.loc["y_err_low_m"]
+            )
+            detec.loc["z_err_low_m"] = Pz_CI[0]
+            detec.loc["z_err_high_m"] = Pz_CI[1]
+            detec.loc["z_err_span_m"] = (
+                    detec.loc["z_err_high_m"] - detec.loc["z_err_low_m"]
+            )
+            # OLD
+            try:
+                detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std.compute()
+            except:
+                detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std
+            # detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std
+            # detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std.persist()
+            # NEW
+            # detec.loc["tdoa_errors_std_sec"] = tdoa_errors_std
+            detec.loc["tdoa_sec"] = str(tdoa_sec.T[0])
+            detec.loc["best_freq_band_hz"] = str(best_freqband)
+            detec.loc["corr_val"] = str(corr_val.T[0])
+            detec.loc["frequency_min"] = freq_min_orig
+            detec.loc["frequency_max"] = freq_max_orig
+            # detec.loc["frequency_min"] = detections.data["frequency_min"].iloc[detec_idx]
+            # detec.loc["frequency_max"] = detections.data["frequency_max"].iloc[detec_idx]
+
+            # detec.loc['PPD'] = PPD_xr
+            detec = detec.to_frame().T
+            # save PPDs
+            # PPDs[detec_idx] = PPD_xr
+        else:
+            detec.loc["x_m"] = np.nan
+            detec.loc["y_m"] = np.nan
+            detec.loc["z_m"] = np.nan
+            detec.loc["x_err_low_m"] = np.nan
+            detec.loc["x_err_high_m"] = np.nan
+            detec.loc["x_err_span_m"] = np.nan
+            detec.loc["y_err_low_m"] = np.nan
+            detec.loc["y_err_high_m"] = np.nan
+            detec.loc["y_err_span_m"] = np.nan
+            detec.loc["z_err_low_m"] = np.nan
+            detec.loc["z_err_high_m"] = np.nan
+            detec.loc["z_err_span_m"] = np.nan
+            detec.loc["tdoa_errors_std_sec"] = np.nan
+            detec.loc["tdoa_sec"] = str(tdoa_sec.T[0])
+            detec.loc["best_freq_band_hz"] = ''
+            detec.loc["corr_val"] = str(corr_val.T[0])
+            detec.loc["frequency_min"] = freq_min_orig
+            detec.loc["frequency_max"] = freq_max_orig
+            # detec.loc["frequency_min"] = detections.data["frequency_min"].iloc[detec_idx]
+            # detec.loc["frequency_max"] = detections.data["frequency_max"].iloc[detec_idx]
+            # detec.loc['PPD'] = np.nan
+            detec = detec.to_frame().T
+
+        # write result in tmp folder
+        localizations.data = detec
+        try:
+            localizations.to_netcdf(os.path.join(tmp_dir_file, str(detec_idx) + ".nc"))
+        except:
+            localizations.to_raven(outdir=os.path.join(tmp_dir_file),outfile=str(detec_idx) + ".txt",single_file=True)
+        print('One localization processed')
+        return localizations
+        # return Pz_CI[0]

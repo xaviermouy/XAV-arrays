@@ -26,6 +26,7 @@ def run_detector(infile, channel, config, chunk=None, deployment_file=None):
         time_offset_sec = 0
 
     # Calculates  spectrogram
+    print('Spectro')
     spectro = Spectrogram(
         config["SPECTROGRAM"]["frame_sec"],
         config["SPECTROGRAM"]["window_type"],
@@ -48,6 +49,7 @@ def run_detector(infile, channel, config, chunk=None, deployment_file=None):
         inplace=True,
     )
     # Denoise
+    print('denoise')
     spectro.denoise(
         config["DENOISER"]["denoiser_name"],
         window_duration=config["DENOISER"]["window_duration_sec"],
@@ -56,6 +58,7 @@ def run_detector(infile, channel, config, chunk=None, deployment_file=None):
         inplace=True,
     )
     # Detector
+    print('detector')
     file_timestamp = ecosound.core.tools.filename_to_datetime(
         sound.file_full_path
     )[0]
