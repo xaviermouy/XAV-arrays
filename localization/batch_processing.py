@@ -6,6 +6,7 @@ Created on Thu Oct 20 15:42:59 2022
 """
 
 import os
+import faulthandler
 import pandas as pd
 import ecosound.core.tools
 from ecosound.core.metadata import DeploymentInfo
@@ -21,6 +22,7 @@ from dask.distributed import Client, progress
 from dask import config as cfg
 from datetime import datetime
 import shutil
+faulthandler.enable()
 
 if __name__ == '__main__':
     #cfg.set({'distributed.scheduler.worker-ttl': None})
@@ -38,16 +40,30 @@ if __name__ == '__main__':
     # Time_of_day_start = 13
     # Time_of_day_end = 4
 
-    in_dir = r"/media/xavier/XMOUY_SDD1/Darienne_deployments/Taylor_Islet_LA_2022/AMAR/AMAR173.4.32000.M36-V35-100"
-    out_dir = r"/home/xavier/Documents/Darienne_XAV-arrays/results"
-    deployment_info_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/deployment_info.csv"  # Deployment metadata
-    hydrophones_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/hydrophones_config_07-HI.csv"  # Hydrophones configuration
-    detection_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/detection_config_large_array.yaml"  # detection parameters
-    localization_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/localization_config_large_array.yaml"  # localization parameters
+    # in_dir = r"/media/xavier/XMOUY_SDD1/Darienne_deployments/Taylor_Islet_LA_2022/AMAR/AMAR173.4.32000.M36-V35-100"
+    # out_dir = r"/home/xavier/Documents/Darienne_XAV-arrays/results"
+    # deployment_info_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/deployment_info.csv"  # Deployment metadata
+    # hydrophones_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/hydrophones_config_07-HI.csv"  # Hydrophones configuration
+    # detection_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/detection_config_large_array.yaml"  # detection parameters
+    # localization_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/config_files/localization_config_large_array.yaml"  # localization parameters
+    # Time_of_day_start = 13
+    # Time_of_day_end = 4
+    # date_deployment = datetime(2022,8,12,23,27)
+    # date_retrieval = datetime(2022,8,23,20,37)
+    # max_frequency_min = 500
+
+    in_dir = r"/media/xavier/DFO-SSD1/DangerRocksDanvers/AMAR/AMAR173.4.32000.M36-V35-100"
+    out_dir = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/results"
+    deployment_info_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/deployment_info_DR.csv"  # Deployment metadata
+    hydrophones_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/hydrophones_config_07-DR.csv"  # Hydrophones configuration
+    detection_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/detection_config_large_array.yaml"  # detection parameters
+    localization_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/localization_config_large_array.yaml"  # localization parameters
     Time_of_day_start = 13
     Time_of_day_end = 4
-    date_deployment = datetime(2022,8,12,23,27)
-    date_retrieval = datetime(2022,8,23,20,37)
+    date_deployment = datetime(2022,9,8,19,56)
+    date_retrieval = datetime(2022,9,16,16,27)
+    max_frequency_min = 500
+
 
     # #############################################################################
     # #############################################################################
@@ -132,9 +148,19 @@ if __name__ == '__main__':
                         # remove detections within 0.5 s from borders to avoid issues
                         chan_wav = Sound(in_file)
                         detections.filter('time_min_offset > 0.5', inplace=True)
-                        detections.filter('time_max_offset <'+ str(chan_wav.file_duration_sec-0.5), inplace=True)
-                        detections.data.reset_index(drop=True,inplace=True)
+                        detections.filter('time_max_offset <'+ str(chan_wav.file_duration_sec-0.5), inplace=True)                        
+                        #detections.data.reset_index(drop=True,inplace=True)
                         print("-> " + str(len(detections)) + " detections found.")
+                        
+                        # Removes high freq detections
+                        #detections.filter('frequency_min <'+ str(max_frequency_min), inplace=True)
+                        detections.filter('frequency_min < 500', inplace=True)
+
+                        # remove detection with small bandwidth (< 100 Hz)
+                        bw = detections.data['frequency_max'] - detections.data['frequency_min']
+                        detections.data = detections.data[bw>50]
+                        detections.data.reset_index(drop=True,inplace=True)                        
+                        print("-> " + str(len(detections)) + " detections (after filtering).")
 
                         # Perform localization using grid search
                         print("Localization")
