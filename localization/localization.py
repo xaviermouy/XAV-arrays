@@ -944,8 +944,8 @@ class GridSearch:
             detec = detec.to_frame().T
 
         # write result in tmp folder
-        # localizations.data = detec
-        # localizations.to_netcdf(os.path.join(tmp_dir_file, str(detec_idx) + ".nc"))
+        localizations.data = detec
+        localizations.to_netcdf(os.path.join(tmp_dir_file, str(detec_idx) + ".nc"))
         print('One localization processed')
         # return localizations
         return Pz_CI[0]
@@ -1267,9 +1267,9 @@ def plot_localizations3D(localizations=None, hydrophones=None):
     if localizations is not None:
         loc_data = localizations.data
         ax.scatter3D(
-            loc_data["x"],
-            loc_data["y"],
-            loc_data["z"],
+            loc_data["x_m"],
+            loc_data["y_m"],
+            loc_data["z_m"],
             c="blue",
             # marker=params['loc_marker'].values[0],
             alpha=1,
@@ -1282,25 +1282,25 @@ def plot_localizations3D(localizations=None, hydrophones=None):
             alph = 1
             ax.plot3D(
                 [loc_point["x_err_low_m"], loc_point["x_err_high_m"]],
-                [loc_point["y"], loc_point["y"]],
-                [loc_point["z"], loc_point["z"]],
+                [loc_point["y_m"], loc_point["y_m"]],
+                [loc_point["z_m"], loc_point["z_m"]],
                 linewidth=lw,
                 # linestyle='-',
                 color=c,
                 alpha=alph,
             )
             ax.plot3D(
-                [loc_point["x"], loc_point["x"]],
+                [loc_point["x_m"], loc_point["x_m"]],
                 [loc_point["y_err_low_m"], loc_point["y_err_high_m"]],
-                [loc_point["z"], loc_point["z"]],
+                [loc_point["z_m"], loc_point["z_m"]],
                 linewidth=lw,
                 # linestyle='-',
                 color=c,
                 alpha=alph,
             )
             ax.plot3D(
-                [loc_point["x"], loc_point["x"]],
-                [loc_point["y"], loc_point["y"]],
+                [loc_point["x_m"], loc_point["x_m"]],
+                [loc_point["y_m"], loc_point["y_m"]],
                 [loc_point["z_err_low_m"], loc_point["z_err_high_m"]],
                 linewidth=lw,
                 # linestyle='-',

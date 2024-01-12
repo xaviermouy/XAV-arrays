@@ -17,9 +17,6 @@ TDOA:
     upsample_res_sec: 0.0000001
     normalize: False
     min_corr_val: 0.8 
-    number_freq_bands: 1
-    min_bandwidth_hz: 200
-    energy_window_perc: 98
 
 GRIDSEARCH:
     x_limits_m: [-3,3] 
