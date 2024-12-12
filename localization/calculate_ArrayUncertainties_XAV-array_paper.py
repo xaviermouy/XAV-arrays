@@ -89,7 +89,8 @@ def plotArrayUncertainties_2D(Uncertainties, vec):
     XY=np.zeros([len(vec),len(vec)])
     for i in range(len(vec)):
         for jj in range(len(vec)):
-            idx = S.index[(S[:x]==vec[i]) & (S[:,y]==vec[jj]) & (S[:,z]==sliceValue)][0]
+            #idx = S.index[(S[:x]==vec[i]) & (S[:,y]==vec[jj]) & (S[:,z]==sliceValue)][0]
+            idx = np.where((S == (vec[i], vec[jj], sliceValue)).all(axis=1))[0][0]           
             XY[i, jj] = Uncertainties['rms'][idx]
     CS_XY = ax1.contour(vec, vec, XY, levels=contoursValues, colors=['k'])
     # Receivers
@@ -103,34 +104,37 @@ def plotArrayUncertainties_2D(Uncertainties, vec):
     cbar = f.colorbar(im, ax=ax1)
     cbar.ax.set_ylabel('Uncertainty (m)')
 
-    # ## XZ plane
-    # XZ=np.zeros([len(vec),len(vec)])
-    # for i in range(len(vec)):
-    #     for jj in range(len(vec)):
-    #         idx = S.index[(S['x']==vec[i]) & (S['z']==vec[jj]) & (S['y']==sliceValue)][0]
-    #         XZ[i, jj] = Uncertainties['rms'][idx]
-    # CS_XZ = ax2.contour(vec, vec, XZ, levels=contoursValues, colors=['k'])
-    # # Receivers
-    # ax2.plot(R['x'], R['z'], 'go')
-    # ax2.set_xlabel('X(m)')
-    # ax2.set_ylabel('Z(m)')
-    # ax2.grid(True)
-    # im=ax2.imshow(XZ, interpolation='bilinear', origin='lower',
-    #                 cmap=cm.jet, extent=(-radius, radius, -radius, radius),norm=colors.Normalize(vmin = 0, vmax = 2))
-    # ax2.set_aspect('auto')
-    # cbar = f.colorbar(im, ax=ax2)
-    # cbar.ax.set_ylabel('Uncertainty (m)')
-    #
-    # ## YZ plane
-    # YZ=np.zeros([len(vec),len(vec)])
-    # for i in range(len(vec)):
-    #     for jj in range(len(vec)):
-    #         idx = S.index[(S['y']==vec[i]) & (S['z']==vec[jj]) & (S['x']==sliceValue)][0]
-    #         YZ[i, jj] = Uncertainties['rms'][idx]
-    # CS_YZ = ax3.contour(vec, vec, YZ, levels=contoursValues, colors=['k'])
+    ## XZ plane
+    XZ=np.zeros([len(vec),len(vec)])
+    for i in range(len(vec)):
+        for jj in range(len(vec)):
+            #idx = S.index[(S['x']==vec[i]) & (S['z']==vec[jj]) & (S['y']==sliceValue)][0]
+            idx = np.where((S == (vec[i], sliceValue, vec[jj])).all(axis=1))[0][0]           
+            XZ[i, jj] = Uncertainties['rms'][idx]
+    CS_XZ = ax2.contour(vec, vec, XZ, levels=contoursValues, colors=['k'])
+    # Receivers
+    ax2.plot(R[:,0], R[:,2], 'go')
+    ax2.set_xlabel('X(m)')
+    ax2.set_ylabel('Z(m)')
+    ax2.grid(True)
+    im=ax2.imshow(XZ, interpolation='bilinear', origin='lower',
+                    cmap=cm.jet, extent=(-radius, radius, -radius, radius),norm=colors.Normalize(vmin = 0, vmax = 2))
+    ax2.set_aspect('auto')
+    cbar = f.colorbar(im, ax=ax2)
+    cbar.ax.set_ylabel('Uncertainty (m)')
+
+    ## YZ plane
+    YZ=np.zeros([len(vec),len(vec)])
+    for i in range(len(vec)):
+        for jj in range(len(vec)):
+            #idx = S.index[(S['y']==vec[i]) & (S['z']==vec[jj]) & (S['x']==sliceValue)][0]
+            idx = np.where((S == (sliceValue,vec[i], vec[jj])).all(axis=1))[0][0]           
+            YZ[i, jj] = Uncertainties['rms'][idx]
+    CS_YZ = ax3.contour(vec, vec, YZ, levels=contoursValues, colors=['k'])
 
     # Receivers
-    ax3.plot(R['y'], R['z'], 'go')
+    #ax3.plot(R['y'], R['z'], 'go')
+    ax3.plot(R[:,1], R[:,2], 'go')
     ax3.set_xlabel('Y(m)')
     ax3.set_ylabel('Z(m)')
     ax3.grid(True)
@@ -139,11 +143,11 @@ def plotArrayUncertainties_2D(Uncertainties, vec):
     cbar = f.colorbar(im, ax=ax3)
     cbar.ax.set_ylabel('Uncertainty (m)')
 
-    #plt.colorbar(im,ax=ax3)
+    plt.colorbar(im,ax=ax3)
     ax3.set_aspect('auto')
     #plt.tight_layout()
     plt.show()
-    #plt.tight_layout()
+    plt.tight_layout()
 #
 #
 #     # Extract contours lines

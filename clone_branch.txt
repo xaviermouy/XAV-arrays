@@ -1,0 +1,1 @@
+git clone -b batch_processing --single-branch https://github.com/xaviermouy/XAV-arrays.git
