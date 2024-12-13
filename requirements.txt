@@ -1,0 +1,4 @@
+pandas
+ecosound
+dask
+PyQt5

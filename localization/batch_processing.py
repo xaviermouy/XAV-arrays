@@ -22,6 +22,9 @@ from dask.distributed import Client, progress
 from dask import config as cfg
 from datetime import datetime
 import shutil
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Qt5Agg')
 faulthandler.enable()
 
 if __name__ == '__main__':
@@ -52,21 +55,39 @@ if __name__ == '__main__':
     # date_retrieval = datetime(2022,8,23,20,37)
     # max_frequency_min = 500
 
-    in_dir = r"/media/xavier/DFO-SSD1/DangerRocksDanvers/AMAR/AMAR173.4.32000.M36-V35-100"
-    out_dir = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/results"
-    deployment_info_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/deployment_info_DR.csv"  # Deployment metadata
-    hydrophones_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/hydrophones_config_07-DR.csv"  # Hydrophones configuration
-    detection_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/detection_config_large_array.yaml"  # detection parameters
-    localization_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/localization_config_large_array.yaml"  # localization parameters
-    Time_of_day_start = 13
-    Time_of_day_end = 4
-    date_deployment = datetime(2022,9,8,19,56)
-    date_retrieval = datetime(2022,9,16,16,27)
-    max_frequency_min = 500
+    # in_dir = r"/media/xavier/DFO-SSD1/DangerRocksDanvers/AMAR/AMAR173.4.32000.M36-V35-100"
+    # out_dir = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/results"
+    # deployment_info_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/deployment_info_DR.csv"  # Deployment metadata
+    # hydrophones_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/hydrophones_config_07-DR.csv"  # Hydrophones configuration
+    # detection_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/detection_config_large_array.yaml"  # detection parameters
+    # localization_config_file = r"/home/xavier/Documents/Darienne_XAV-arrays/Danger_Rock/config_files/localization_config_large_array.yaml"  # localization parameters
+    # Time_of_day_start = 13
+    # Time_of_day_end = 4
+    # date_deployment = datetime(2022,9,8,19,56)
+    # date_retrieval = datetime(2022,9,16,16,27)
+    # max_frequency_min = 500
+
+    # LIRS data ROV
+    in_dir = r"F:\LizardIsland_backup\MobileArray_deployments\2023-11-25_afternoon\ST\5147"
+    out_dir = r"C:\Users\xavier.mouy\Documents\Projects\2023_LizardIsland_AIMS\analysis\Localization\results"
+    deployment_info_file = r"C:\Users\xavier.mouy\Documents\Projects\2023_LizardIsland_AIMS\analysis\Localization\config_files\deployment_info.csv"  # Deployment metadata
+    hydrophones_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2023_LizardIsland_AIMS\analysis\Localization\config_files\hydrophones_config_LIRS-ROV.csv"  # Hydrophones configuration
+    detection_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2023_LizardIsland_AIMS\analysis\Localization\config_files\detection_config_LIRS-ROV.yaml"  # detection parameters
+    localization_config_file = r"C:\Users\xavier.mouy\Documents\Projects\2023_LizardIsland_AIMS\analysis\Localization\config_files\localization_config_LIRS-ROV.yaml"  # localization parameters
+    Time_of_day_start = 0
+    Time_of_day_end = 24
+    date_deployment = datetime(2023,11,25,4,8)
+    date_retrieval = datetime(2023,11,25,4,18)
+    max_frequency_min = 3000
 
 
     # #############################################################################
     # #############################################################################
+
+    # Start Dask client
+    #print('Starting Dask client:')
+    #client = Client()
+    #print(client)
 
     # create tmp folder
     tmp_dir = os.path.join(out_dir,'tmp')
@@ -142,10 +163,12 @@ if __name__ == '__main__':
                             detection_config,
                             deployment_file=deployment_info_file,
                         )
+                        detections.data.audio_channel = detections.data.audio_channel.astype(int)
                         toc = time.perf_counter()
                         print(f"Elapsed time: {toc - tic:0.4f} seconds")
 
                         # remove detections within 0.5 s from borders to avoid issues
+                        print('Filtering detections:')
                         chan_wav = Sound(in_file)
                         detections.filter('time_min_offset > 0.5', inplace=True)
                         detections.filter('time_max_offset <'+ str(chan_wav.file_duration_sec-0.5), inplace=True)                        
@@ -161,6 +184,9 @@ if __name__ == '__main__':
                         detections.data = detections.data[bw>50]
                         detections.data.reset_index(drop=True,inplace=True)                        
                         print("-> " + str(len(detections)) + " detections (after filtering).")
+
+                        # Removes long detections
+                        detections.filter('duration < 0.1', inplace=True)
 
                         # Perform localization using grid search
                         print("Localization")
